@@ -1,0 +1,5 @@
+2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx, IDivergenceDeconvolve.cxx,
+   JansenVanCittertDeconvolve.cxx, SmoothJansenVanCittertDeconvolve.cxx,
+   WienerDeconvolve.cxx: Initial check-in.
