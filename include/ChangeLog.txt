@@ -1,0 +1,3 @@
+2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Initial check-in.
