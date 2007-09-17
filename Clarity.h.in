@@ -1,0 +1,14 @@
+#ifndef CLARITY_PRECONF_INCLUDE
+#define CLARITY_PRECONF_INCLUDE
+
+#define CLARITY_VERSION @clarity_VERSION_FLAT@
+
+#cmakedefine BUILD_SHARED_LIBS
+
+#ifdef BUILD_SHARED_LIBS
+# define CLARITY_SHARED_LIB
+#endif
+
+#endif
+
+#include <include/clarity.h>
