@@ -1,5 +1,10 @@
 2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
 
+   * HOWTO-Build-Clarity.txt: Initial check-in of instructions on how
+   to build the Clarity library.
+
+2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
+
    * CMakeLists.txt: Added Clarity.cxx source file to project.
 
 2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
