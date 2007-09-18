@@ -1,3 +1,7 @@
+2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added Clarity.cxx source file to project.
+
 2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.h.in, CMakeLists.txt: Initial check-in.

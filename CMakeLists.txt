@@ -14,6 +14,7 @@ include_directories(${Clarity_BINARY_DIR})
 include_directories(${Clarity_SOURCE_DIR})
 
 set( Clarity_SRCS
+  src/Clarity.cxx
   src/WienerDeconvolve.cxx
   src/JansenVanCittertDeconvolve.cxx
   src/SmoothedJansenVanCittertDeconvolve.cxx
