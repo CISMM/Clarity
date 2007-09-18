@@ -1,5 +1,11 @@
 2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
 
+   * IDivergenceDeconvolve.cxx, JansenVanCittertDeconvolve.cxx,
+   SmoothedJansenVanCittertDeconvolve.cxx: Set algorithm outputs to
+   all zeros for now.
+
+2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
+
    * WienerDeconvolve.cxx: Fixed loop index error.
 
 2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
