@@ -1,3 +1,18 @@
+2007-09-19 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.cxx: Initial check-in of functions for taking the FFT of
+   real-valued images. Simpler than FFTW's interface. Also, this will
+   let us swap out the underlying FFT library in the future more easily
+   (FFTW is under GPL).
+   
+   * IDivergenceDeconvolve.cxx, JansenVanCittertDeconvolve.cxx,
+   SmoothedJansenVanCittertDeconvolve.cxx: Changed to reflect changes in 
+   signature of functions.
+   
+   * WienerDeconvolve.cxx: Changed to reflect changes in signature of
+   function. Inserted a forward and inverse Fourier transform to test out
+   FFT functions.
+
 2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
 
    * IDivergenceDeconvolve.cxx, JansenVanCittertDeconvolve.cxx,
