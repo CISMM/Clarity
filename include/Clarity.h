@@ -29,6 +29,8 @@
 /** Enumerates the number and type of errors that 
    the Clarity library may produce. */
 typedef enum {
+   CLARITY_FFT_FAILED,
+   CLARITY_OUT_OF_MEMORY,
    CLARITY_SUCCESS
 } ClarityResult_t;
 
@@ -53,21 +55,24 @@ Clarity_SetNumberOfThreads(int n);
 /***********************************/
 
 C_FUNC_DEF ClarityResult_t 
-Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage, int dimensions[3]);
+Clarity_WienerDeconvolve(float* outImage, float* inImage, 
+                         int nx, int ny, int nz, float* psfImage);
 
 
 C_FUNC_DEF ClarityResult_t 
-Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage, int dimensions[3], 
+Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, 
+                                   int nx, int ny, int nz, float* psfImage, 
                                    unsigned iterations);
 
 
 C_FUNC_DEF ClarityResult_t
-Clarity_SmoothedJansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage, 
-                                           int dimensions[3], unsigned iterations, 
-                                           unsigned smoothInterval, float smoothSigma);
+Clarity_SmoothedJansenVanCittertDeconvolve(float* outImage, float* inImage, int nx, int ny, int nz, 
+                                           float* psfImage, unsigned iterations, 
+                                           unsigned smoothInterval, float smoothSigma[3]);
 
 
 C_FUNC_DEF ClarityResult_t
-Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, float* psfImage, int dimensions[3]);
+Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, 
+                              int nx, int ny, int nz, float* psfImage);
 
 #endif // VERDICT_INC_LIB

@@ -1,3 +1,10 @@
 2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
 
+   * Clarity.h: Added some enumerants to ClarityResult_t enum.
+   Changed most of the function signatures.
+
+   * FFT.h: Header for abstracting away the underlying FFT library.
+
+2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
+
    * Clarity.h: Initial check-in.
