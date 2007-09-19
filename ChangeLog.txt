@@ -1,3 +1,10 @@
+2007-09-19 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h.in: Fixed include file name (case was wrong).
+   
+   * CMakeLists.txt: Added CMake directives that cause CMake to ask for
+   FFTW libraries. Added FFT.cxx source file.
+
 2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
 
    * HOWTO-Build-Clarity.txt: Initial check-in of instructions on how

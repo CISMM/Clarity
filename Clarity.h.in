@@ -11,4 +11,4 @@
 
 #endif
 
-#include <include/clarity.h>
+#include <include/Clarity.h>
