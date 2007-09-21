@@ -24,7 +24,10 @@ fftf_r2c_3d(int nx, int ny, int nz, float* in, float* out) {
       inComplex[i][1] = 0.0f;
    }
 
-   fftwf_plan plan = fftwf_plan_dft_3d(nx, ny, nz, inComplex, outComplex,
+   // Holy smokes, I wasted a lot of time just to find that FFTW expects
+   // data arranged not in the normal way in medical/biological imaging.
+   // Dimension sizes need to be reversed.
+   fftwf_plan plan = fftwf_plan_dft_3d(nz, ny, nx, inComplex, outComplex,
       FFTW_FORWARD, FFTW_ESTIMATE);
    if (plan == NULL) {
       fftwf_free(inComplex);
@@ -50,7 +53,10 @@ fftf_c2r_3d(int nx, int ny, int nz, float* in, float* out) {
 
    fftwf_complex* inComplex = (fftwf_complex*) in;
 
-   fftwf_plan plan = fftwf_plan_dft_3d(nx, ny, nz, inComplex, outComplex,
+   // Holy smokes, I wasted a lot of time just to find that FFTW expects
+   // data arranged not in the normal way in medical/biological imaging.
+   // Dimension sizes need to be reversed.
+   fftwf_plan plan = fftwf_plan_dft_3d(nz, ny, nx, inComplex, outComplex,
       FFTW_BACKWARD, FFTW_ESTIMATE);
    if (plan == NULL) {
       fftwf_free(outComplex);

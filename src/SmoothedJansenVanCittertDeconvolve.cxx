@@ -1,8 +1,8 @@
 #include "Clarity.h"
 
 ClarityResult_t
-Clarity_SmoothedJansenVanCittertDeconvolve(float* outImage, float* inImage, int nx, int ny, int nz, 
-                                           float* psfImage, unsigned iterations, 
+Clarity_SmoothedJansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage,
+                                           int nx, int ny, int nz, unsigned iterations, 
                                            unsigned smoothInterval, float smoothSigma[3]) {
 
    // Temporary code to produce something for checking whether VTK hookup works.

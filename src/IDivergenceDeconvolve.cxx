@@ -1,8 +1,8 @@
 #include "Clarity.h"
 
 ClarityResult_t
-Clarity_IDivergenceDeconvolve(float* outImage, float* inImage,
-                              int nx, int ny, int nz, float* psfImage) {
+Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, float* psfImage,
+                              int nx, int ny, int nz) {
 
    // Temporary code to produce something for checking whether VTK hookup works.
    int size = nx*ny*nz;

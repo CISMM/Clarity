@@ -1,3 +1,13 @@
+2007-09-21 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.cxx: My understanding of row-major order is not the same as that
+   of FFTW, causing me much consternation. The fix was simple: reverse the
+   order of the image dimensions.
+   
+   * IDivergenceDeconvolve.cxx, JansenVanCittertDeconvolve.cxx,
+   SmoothedJansenVanCittertDeconvolve.cxx, WienerDeconvolve.cxx:
+   Function signature changes.
+
 2007-09-19 Cory Quammen <cquammen@cs.unc.edu>
 
    * FFT.cxx: Initial check-in of functions for taking the FFT of
