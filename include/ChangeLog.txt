@@ -1,3 +1,9 @@
+2007-09-21 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Somewhat inconsequential rearrangement of function parameters.
+   
+   * Complex.h: New complex math inline functions.
+
 2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.h: Added some enumerants to ClarityResult_t enum.

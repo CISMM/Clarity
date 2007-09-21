@@ -55,24 +55,23 @@ Clarity_SetNumberOfThreads(int n);
 /***********************************/
 
 C_FUNC_DEF ClarityResult_t 
-Clarity_WienerDeconvolve(float* outImage, float* inImage, 
-                         int nx, int ny, int nz, float* psfImage);
+Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
+                         int nx, int ny, int nz);
 
 
 C_FUNC_DEF ClarityResult_t 
-Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, 
-                                   int nx, int ny, int nz, float* psfImage, 
-                                   unsigned iterations);
+Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage,
+                                   int nx, int ny, int nz, unsigned iterations);
 
 
 C_FUNC_DEF ClarityResult_t
-Clarity_SmoothedJansenVanCittertDeconvolve(float* outImage, float* inImage, int nx, int ny, int nz, 
-                                           float* psfImage, unsigned iterations, 
+Clarity_SmoothedJansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage,
+                                           int nx, int ny, int nz, unsigned iterations, 
                                            unsigned smoothInterval, float smoothSigma[3]);
 
 
 C_FUNC_DEF ClarityResult_t
-Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, 
-                              int nx, int ny, int nz, float* psfImage);
+Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, float* psfImage, 
+                              int nx, int ny, int nz);
 
 #endif // VERDICT_INC_LIB
