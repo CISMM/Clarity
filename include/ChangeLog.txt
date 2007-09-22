@@ -1,3 +1,10 @@
+2007-09-22 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Added a noise standard deviation and epsilon parameters to
+   Clarity_WienerDeconvolve.
+   
+   * Complex.h: Added a couple more useful complex operations.
+
 2007-09-21 Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.h: Somewhat inconsequential rearrangement of function parameters.

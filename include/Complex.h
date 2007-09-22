@@ -18,12 +18,25 @@ inline void ComplexMultiply(float *c1, float *c2, float *result) {
 }
 
 
+inline void ComplexMultiply(float *c, float real, float *result) {
+   result[0] = c[0]*real;
+   result[1] = c[1]*real;
+}
+
+
 inline void ComplexMagnitudeSquared(float *c, float *result) {
   // a^2 + b^2
   float a = c[0];
   float b = c[1];
   result[0] = a*a + b*b;
   result[1] = 0.0f;
+}
+
+
+inline float ComplexMagnitudeSquared(float *c) {
+  float a = c[0];
+  float b = c[1];
+  return ((a*a) + (b*b));
 }
 
 

@@ -56,7 +56,7 @@ Clarity_SetNumberOfThreads(int n);
 
 C_FUNC_DEF ClarityResult_t 
 Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
-                         int nx, int ny, int nz);
+                         int nx, int ny, int nz, float noiseStdDev, float epsilon);
 
 
 C_FUNC_DEF ClarityResult_t 
