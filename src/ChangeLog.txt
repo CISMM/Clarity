@@ -1,3 +1,9 @@
+2007-09-22 Cory Quammen <cquammen@cs.unc.edu>
+
+   * JansenVanCittertDeconvolve.cxx: Added CPU implementation.
+   
+   * WienerDeconvolve.cxx: Finished CPU implementation.
+
 2007-09-21 Cory Quammen <cquammen@cs.unc.edu>
 
    * FFT.cxx: My understanding of row-major order is not the same as that
