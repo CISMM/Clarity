@@ -1,5 +1,12 @@
 2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
 
+   * Clarity.cxx: Removed fftwf_cleanup_threads from the UnRegister
+   function because it destroys accumulated FFTW wisdom, which we don't
+   really want to happen. Also, SetNumberOfThreads now tells FFTW to
+   plan FFTs with the specified number of threads.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
    * Clarity.cxx: Changed Init and Destroy functions to Register
    and UnRegister, which more accurately reflects how the library
    should be initialized and released by callers.

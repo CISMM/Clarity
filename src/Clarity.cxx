@@ -24,7 +24,7 @@ ClarityResult_t
 Clarity_UnRegister() {
    gRegisteredClients--;
    if (gRegisteredClients <= 0) {
-      fftwf_cleanup_threads();
+      
    }
 
    return CLARITY_SUCCESS;
@@ -34,6 +34,8 @@ Clarity_UnRegister() {
 C_FUNC_DEF ClarityResult_t
 Clarity_SetNumberOfThreads(unsigned n) {
    omp_set_num_threads(n);
+   int np = omp_get_num_procs();
+   fftwf_plan_with_nthreads(np);
 
    return CLARITY_SUCCESS;
 }
