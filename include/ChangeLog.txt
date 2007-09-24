@@ -1,5 +1,9 @@
 2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
 
+   * Stopwatch.h: Added this class for taking timings.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
    * Clarity.h: Changed functions Init and Destroy to Register and UnRegister.
 
 2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
