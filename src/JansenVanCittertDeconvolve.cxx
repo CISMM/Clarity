@@ -32,11 +32,42 @@ Clarity_GetImageMax(float *inImage, int numVoxels) {
 }
 
 
+void
+Clarity_JansenVanCittertDeconvolveKernelCPU(int nx, int ny, int nz,
+                                            float* in, float inMax,
+                                            float invMaxSq,
+                                            float* i_k, float* o_k, 
+                                            float* i_kNext) {
+   int numVoxels = nx*ny*nz;
+
+#pragma omp parallel for
+   for (int j = 0; j < numVoxels; j++) {
+      float diff = o_k[j] - inMax;
+      float gamma = 1.0f - ((diff * diff) * invMaxSq);
+      float val = i_k[j] + (gamma * (in[j] - o_k[j]));
+      if (val < 0.0f) val = 0.0f;
+      i_kNext[j] = val;
+   }
+
+}
+
+
+void
+Clarity_JansenVanCittertDeconvolveKernel(int nx, int ny, int nz,
+                                         float* in, float inMax,
+                                         float invMaxSq,
+                                         float* i_k, float* o_k, 
+                                         float* i_kNext) {
+   Clarity_JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, in, inMax,
+      invMaxSq, i_k, o_k, i_kNext);
+}
+
+
 ClarityResult_t 
 Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage, 
                                    int nx, int ny, int nz, unsigned iterations) {
    int numVoxels = nx*ny*nz;
-   ClarityResult_t result;
+   ClarityResult_t result = CLARITY_SUCCESS;
 
    // Find maximum value in the input image.
    float max = Clarity_GetImageMax(inImage, numVoxels);
@@ -44,83 +75,53 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
    float invASq = 1.0f / (A * A);
 
    // Fourier transform of PSF.
-   float* psfFT = (float *) malloc(sizeof(float) * numVoxels * 2);
-   if (psfFT == NULL) {
-      return CLARITY_OUT_OF_MEMORY;
-   }
-   result = fftf_r2c_3d(nx, ny, nz, psfImage, psfFT);
+   float* psfFT = NULL;
+   result = Clarity_R2C_Malloc((void**) &psfFT, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
-      free(psfFT);
+      return result;
+   }
+   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, psfImage, psfFT);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT);
       return result;
    }
 
-   // Set up the array holding the current guess and copy initial
-   // image into it.
-   float* iPtr = (float *) malloc(sizeof(float) * numVoxels);
-   if (iPtr == NULL) {
-      free(psfFT);
-      return CLARITY_OUT_OF_MEMORY;
-   }
-#pragma omp parallel for
-   for (int j = 0; j < numVoxels; j++) {
-      iPtr[j] = inImage[j];
-   }
-
-   // Stores convolution of current guess with the PSF
-   float* oPtr = (float *) malloc(sizeof(float) * numVoxels);
-   if (oPtr == NULL) {
-      free(psfFT); free(iPtr);
+   // Set up the array holding the current guess.
+   float* iPtr = NULL;
+   result = Clarity_C2R_Malloc((void**)&iPtr, sizeof(float), nx, ny, nz);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT);
       return CLARITY_OUT_OF_MEMORY;
    }
 
-   // Temporary storage for results of point-wise multiplication
-   float* convTmp = (float *) malloc(sizeof(float) * numVoxels * 2);
-   if (convTmp == NULL) {
-      free(psfFT); free(iPtr); free(oPtr);
-      return CLARITY_OUT_OF_MEMORY;
+   // Storage for convolution of current guess with the PSF.
+   float* oPtr = NULL;
+   result = Clarity_C2R_Malloc((void**) &oPtr, sizeof(float), nx, ny, nz);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT); free(iPtr);
+      return result;
    }
 
    // Iterate
-   for (unsigned k = 0; k < iterations; k++) {      
-      result = fftf_r2c_3d(nx, ny, nz, iPtr, convTmp);
+   for (unsigned k = 0; k < iterations; k++) {
+      if (k == 0)
+         result = Clarity_Convolve_OTF(nx, ny, nz, inImage, psfFT, oPtr);
+      else
+         result = Clarity_Convolve_OTF(nx, ny, nz, iPtr, psfFT, oPtr);
       if (result != CLARITY_SUCCESS) {
-         free(psfFT); free(iPtr); free(oPtr);
-         return result;
-      }
-
-#pragma omp parallel for
-      for (int j = 0; j < numVoxels; j++) {
-         ComplexMultiply(convTmp+(2*j), psfFT+(2*j), convTmp+(2*j));
-      }
-
-      result = fftf_c2r_3d(nx, ny, nz, convTmp, oPtr);
-      if (result != CLARITY_SUCCESS) {
-         free(psfFT); free(iPtr); free(oPtr);
-         return result;
+         break;
       }
 
       if (k < iterations - 1) {
-#pragma omp parallel for
-         for (int j = 0; j < numVoxels; j++) {
-            float diff = oPtr[j] - A;
-            float gamma = 1.0f - ((diff * diff) * invASq);
-            float val = iPtr[j] + (gamma * (inImage[j] - oPtr[j]));
-            if (val < 0.0f) val = 0.0f;
-            iPtr[j] = val;
-         }
+         Clarity_JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, inImage,
+            A, invASq, iPtr, oPtr, iPtr);
       } else {
-#pragma omp parallel for
-         for (int j = 0; j < numVoxels; j++) {
-            float diff = oPtr[j] - A;
-            float gamma = 1.0f - ((diff * diff) * invASq);
-            float val = iPtr[j] + (gamma * (inImage[j] - oPtr[j]));
-            if (val < 0.0f) val = 0.0f;
-            outImage[j] = val;
-         }
+         Clarity_JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, inImage,
+            A, invASq, iPtr, oPtr, outImage);
       }
    }
 
-   free(psfFT); free(oPtr);
+   Clarity_Free(psfFT); Clarity_Free(oPtr); Clarity_Free(iPtr);
 
    return CLARITY_SUCCESS;
 }

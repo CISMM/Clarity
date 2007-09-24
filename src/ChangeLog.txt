@@ -1,3 +1,14 @@
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.cxx: Added memory allocation functions and a convolution
+   function.
+   
+   * JansenVanCittertDeconvolve.cxx: Cleaned up and refactored into
+   more manageable pieces.
+   
+   * WienerDeconvolve.cxx: Cleaned up and changed to use new memory
+   allocation functions.
+
 2007-09-22 Cory Quammen <cquammen@cs.unc.edu>
 
    * JansenVanCittertDeconvolve.cxx: Added CPU implementation.

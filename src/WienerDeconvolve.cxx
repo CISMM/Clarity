@@ -7,41 +7,42 @@
 
 #include <iostream>
 
+//#define CONVOLUTION
+
 ClarityResult_t 
 Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage, 
                          int nx, int ny, int nz, float noiseStdDev, float epsilon) {
    int numVoxels = nx*ny*nz;
-   ClarityResult_t result;
+   ClarityResult_t result = CLARITY_SUCCESS;
 
    // Forward Fourier transform of input image.
-   float* inFT = (float *) malloc(sizeof(float) * numVoxels * 2);
-   if (inFT == NULL) {
+   float* inFT = NULL;
+   result = Clarity_R2C_Malloc((void**) &inFT, sizeof(float), nx, ny, nz);
+   if (result != CLARITY_SUCCESS) {
       return CLARITY_OUT_OF_MEMORY;
    }
-   result = fftf_r2c_3d(nx, ny, nz, inImage, inFT);
+   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, inImage, inFT);
    if (result != CLARITY_SUCCESS) {
-      free(inFT);    
+      Clarity_Free(inFT);
       return result;
    }
 
    // Fourier transform of PSF.
-   float* psfFT = (float *) malloc(sizeof(float) * numVoxels * 2);
-   if (psfFT == NULL) {
-      free(inFT);
+   float* psfFT = NULL;
+   result = Clarity_R2C_Malloc((void**) &psfFT, sizeof(float), nx, ny, nz);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(inFT);
       return CLARITY_OUT_OF_MEMORY;
    }
-   result = fftf_r2c_3d(nx, ny, nz, psfImage, psfFT);
+   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, psfImage, psfFT);
    if (result != CLARITY_SUCCESS) {
-      free(inFT);
-      free(psfFT);
+      Clarity_Free(inFT); Clarity_Free(psfFT);
       return result;
    }
 
-#if 0
-   // Quick test of convolution by multiplication
-   for (int i = 0; i < numVoxels; i++) {
-      ComplexMultiply(inFT + (2*i), psfFT + (2*i), inFT + (2*i));
-   }
+#ifdef CONVOLUTION
+   // Quick test of convolution
+   Clarity_Convolve_OTF(nx, ny, nz, inImage, psfFT, outImage);
 #else
 
    float sigma = noiseStdDev;
@@ -73,11 +74,12 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
    }
 #endif
 
+#ifndef CONVOLUTION
    // Inverse Fourier transform of result.
-   result = fftf_c2r_3d(nx, ny, nz, inFT, outImage);
-
-   fftwf_free(inFT);
-   fftwf_free(psfFT);
+   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, inFT, outImage);
+#endif
+   Clarity_Free(inFT);
+   Clarity_Free(psfFT);
 
    return CLARITY_SUCCESS;
 }

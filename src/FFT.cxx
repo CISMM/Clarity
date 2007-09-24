@@ -1,13 +1,45 @@
 #include "FFT.h"
 
+#include "Complex.h"
 #include "fftw3.h"
 
 /** Planning method for FFTW. */
 static unsigned g_fftw3_planner_flags = FFTW_MEASURE;
 
+ClarityResult_t
+Clarity_R2C_Malloc(void** buffer, size_t size, int nx, int ny, int nz) {
+   ClarityResult_t result = CLARITY_SUCCESS;
+
+   *buffer = fftwf_malloc(sizeof(size)*nx*ny*nz*2);
+   if (*buffer == NULL) {
+      result = CLARITY_OUT_OF_MEMORY;
+   }
+
+   return result;
+}
+
 
 ClarityResult_t
-fftf_r2c_3d(int nx, int ny, int nz, float* in, float* out) {
+Clarity_C2R_Malloc(void** buffer, size_t size, int nx, int ny, int nz) {
+   ClarityResult_t result = CLARITY_SUCCESS;
+
+   *buffer = fftwf_malloc(sizeof(size)*nx*ny*nz);
+   if (*buffer == NULL) {
+      result = CLARITY_OUT_OF_MEMORY;
+   }
+
+   return result;
+}
+
+
+void
+Clarity_Free(void* buffer) {
+   fftwf_free(buffer);
+}
+
+
+ClarityResult_t
+Clarity_FFT_R2C_3D_float(int nx, int ny, int nz, float* in, float* out) {
    int numVoxels = nx*ny*nz;
 
    fftwf_complex* inComplex = 
@@ -42,7 +74,7 @@ fftf_r2c_3d(int nx, int ny, int nz, float* in, float* out) {
 
 
 ClarityResult_t
-fftf_c2r_3d(int nx, int ny, int nz, float* in, float* out) {
+Clarity_FFT_C2R_3D_float(int nx, int ny, int nz, float* in, float* out) {
    int numVoxels = nx*ny*nz;
 
    fftwf_complex* outComplex =
@@ -74,4 +106,38 @@ fftf_c2r_3d(int nx, int ny, int nz, float* in, float* out) {
    fftwf_free(outComplex);
 
    return CLARITY_SUCCESS;
+}
+
+
+ClarityResult_t
+Clarity_Convolve_OTF(int nx, int ny, int nz, float* in, float* otf, float* out) {
+   ClarityResult_t result = CLARITY_SUCCESS;
+   int numVoxels = nx*ny*nz;
+
+   float* inFT = NULL;
+   result = Clarity_R2C_Malloc((void**) &inFT, sizeof(float), nx, ny, nz);
+   if (result == CLARITY_OUT_OF_MEMORY) {
+      return result;
+   }
+
+   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, in, inFT);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(inFT);
+      return result;
+   }
+
+#pragma parallel for
+   for (int i = 0; i < numVoxels; i++) {
+      ComplexMultiply(inFT + (2*i), otf + (2*i), inFT + (2*i));
+   }
+
+   result = Clarity_FFT_C2R_3D_float(nx, ny, nz, inFT, out);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(inFT);
+      return result;
+   }
+
+   Clarity_Free(inFT);
+
+   return result;
 }
