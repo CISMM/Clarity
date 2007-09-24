@@ -1,3 +1,8 @@
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.h: Added some memory allocation functions specifically for holding
+   the results of Fourier transforms (real-to-complex and complex-to-real).
+
 2007-09-22 Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.h: Added a noise standard deviation and epsilon parameters to
