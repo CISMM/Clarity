@@ -39,15 +39,15 @@ typedef enum {
 /***** UTILITY FUNCTIONS *****/
 /*****************************/
 C_FUNC_DEF ClarityResult_t
-Clarity_Init();
+Clarity_Register();
 
 
 C_FUNC_DEF ClarityResult_t
-Clarity_Destroy();
+Clarity_UnRegister();
 
 
 C_FUNC_DEF ClarityResult_t
-Clarity_SetNumberOfThreads(int n);
+Clarity_SetNumberOfThreads(unsigned n);
 
 
 /***********************************/
