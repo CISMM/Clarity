@@ -26,6 +26,7 @@ include_directories(${Clarity_SOURCE_DIR} ${Clarity_SOURCE_DIR}/include)
 set( Clarity_SRCS
   src/Clarity.cxx
   src/FFT.cxx
+  src/Stopwatch.cxx
   src/WienerDeconvolve.cxx
   src/JansenVanCittertDeconvolve.cxx
   src/SmoothedJansenVanCittertDeconvolve.cxx
