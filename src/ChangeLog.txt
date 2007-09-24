@@ -1,5 +1,12 @@
 2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
 
+   * JansenVanCitterDeconvolve.cxx, WienerDeconvolve.cxx: Added
+   timings for execution of the entire algorithm.
+   
+   * Stopwatch.cxx: New timer class from GLVU.
+   
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
    * Clarity.cxx: Removed fftwf_cleanup_threads from the UnRegister
    function because it destroys accumulated FFTW wisdom, which we don't
    really want to happen. Also, SetNumberOfThreads now tells FFTW to

@@ -5,6 +5,14 @@
 #include <stdlib.h>
 #include <omp.h>
 
+#ifdef TIME
+#include <iostream>
+#include "Stopwatch.h"
+
+static Stopwatch totalTimer("JansenVanCittert filter (total time)");
+static Stopwatch transferTimer("JansenVanCittert filter (transfer time)");
+#endif
+
 float
 Clarity_GetImageMax(float *inImage, int numVoxels) {
    float max = inImage[0];
@@ -65,6 +73,11 @@ Clarity_JansenVanCittertDeconvolveKernel(int nx, int ny, int nz,
 ClarityResult_t 
 Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage, 
                                    int nx, int ny, int nz, unsigned iterations) {
+
+#ifdef TIME
+   totalTimer.Start();
+#endif
+
    int numVoxels = nx*ny*nz;
    ClarityResult_t result = CLARITY_SUCCESS;
 
@@ -121,6 +134,11 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
    }
 
    Clarity_Free(psfFT); Clarity_Free(oPtr); Clarity_Free(iPtr);
+
+#ifdef TIME
+   totalTimer.Stop();
+   std::cout << totalTimer << std::endl;
+#endif
 
    return CLARITY_SUCCESS;
 }

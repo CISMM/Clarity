@@ -7,12 +7,24 @@
 #include "Complex.h"
 #include "FFT.h"
 
-
 //#define CONVOLUTION
+
+#ifdef TIME
+#include <iostream>
+#include "Stopwatch.h"
+
+static Stopwatch totalTimer("Wiener filter (total time)");
+static Stopwatch transferTimer("Wiener filter (transfer time)");
+#endif
 
 ClarityResult_t 
 Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage, 
                          int nx, int ny, int nz, float noiseStdDev, float epsilon) {
+
+#ifdef TIME
+   totalTimer.Start();
+#endif
+                            
    int numVoxels = nx*ny*nz;
    ClarityResult_t result = CLARITY_SUCCESS;
 
@@ -82,6 +94,12 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
 #endif
    Clarity_Free(inFT);
    Clarity_Free(psfFT);
+
+#ifdef TIME
+   totalTimer.Stop();
+   std::cout << totalTimer << std::endl;
+   std::cout << transferTimer << std::endl;
+#endif
 
    return CLARITY_SUCCESS;
 }
