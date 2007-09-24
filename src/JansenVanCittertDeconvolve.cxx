@@ -2,9 +2,8 @@
 #include "Complex.h"
 #include "FFT.h"
 
-#include "omp.h"
-
-#include <iostream>
+#include <stdlib.h>
+#include <omp.h>
 
 float
 Clarity_GetImageMax(float *inImage, int numVoxels) {
@@ -98,7 +97,7 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
    float* oPtr = NULL;
    result = Clarity_C2R_Malloc((void**) &oPtr, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); free(iPtr);
+      Clarity_Free(psfFT); Clarity_Free(iPtr);
       return result;
    }
 

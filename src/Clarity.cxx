@@ -1,20 +1,39 @@
 #include "Clarity.h"
 
+#include "fftw3.h"
+#include <iostream>
+#include <omp.h>
+
+static unsigned gRegisteredClients = 0;
 
 ClarityResult_t
-Clarity_Init() {
+Clarity_Register() {
+   if (gRegisteredClients <= 0) {
+      int np = omp_get_num_procs();
+      Clarity_SetNumberOfThreads(np);
+      fftwf_init_threads();
+      fftwf_plan_with_nthreads(np);
+   }
+   gRegisteredClients++;
+
    return CLARITY_SUCCESS;
 }
 
 
 ClarityResult_t
-Clarity_Destroy() {
+Clarity_UnRegister() {
+   gRegisteredClients--;
+   if (gRegisteredClients <= 0) {
+      fftwf_cleanup_threads();
+   }
+
    return CLARITY_SUCCESS;
 }
 
 
 C_FUNC_DEF ClarityResult_t
-Clarity_SetNumberOfThreads(int n) {
+Clarity_SetNumberOfThreads(unsigned n) {
+   omp_set_num_threads(n);
 
    return CLARITY_SUCCESS;
 }

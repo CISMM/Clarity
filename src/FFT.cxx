@@ -97,8 +97,8 @@ Clarity_FFT_C2R_3D_float(int nx, int ny, int nz, float* in, float* out) {
    fftwf_execute(plan);
    fftwf_destroy_plan(plan);
 
-#pragma omp parallel for
    float multiplier = 1.0f / ((float) numVoxels);
+#pragma omp parallel for
    for (int i = 0; i < numVoxels; i++) {
       out[i] = outComplex[i][0] * multiplier;
    }
@@ -126,7 +126,7 @@ Clarity_Convolve_OTF(int nx, int ny, int nz, float* in, float* otf, float* out) 
       return result;
    }
 
-#pragma parallel for
+#pragma omp parallel for
    for (int i = 0; i < numVoxels; i++) {
       ComplexMultiply(inFT + (2*i), otf + (2*i), inFT + (2*i));
    }

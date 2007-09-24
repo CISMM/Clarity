@@ -1,11 +1,12 @@
 #include "Clarity.h"
 
+#include <omp.h>
+#include <fftw3.h>
+#include <math.h>
+
 #include "Complex.h"
 #include "FFT.h"
-#include "fftw3.h"
-#include "math.h"
 
-#include <iostream>
 
 //#define CONVOLUTION
 
@@ -50,6 +51,7 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
    // Apply Wiener filter
    // Reference: J.S. Lim, "Two dimensional signal and image processing",
    // Prentice Hall, 1990- pg.560 Eq. (9. 73)
+#pragma omp parallel for
    for (int i = 0; i < numVoxels; i++) {
       // Create inverse filter if we can
       float H[2] = {psfFT[2*i+0], psfFT[2*i+1]};
@@ -76,7 +78,7 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
 
 #ifndef CONVOLUTION
    // Inverse Fourier transform of result.
-   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, inFT, outImage);
+   result = Clarity_FFT_C2R_3D_float(nx, ny, nz, inFT, outImage);
 #endif
    Clarity_Free(inFT);
    Clarity_Free(psfFT);

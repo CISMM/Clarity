@@ -1,5 +1,19 @@
 2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
 
+   * Clarity.cxx: Changed Init and Destroy functions to Register
+   and UnRegister, which more accurately reflects how the library
+   should be initialized and released by callers.
+   
+   * FFT.cxx: OpenMP fixups.
+   
+   * JansenVanCittertDeconvolve.cxx: Changed how omp.h is included.
+   Removed iostream include.
+   
+   * WienerDeconvolve.cxx: Cleaned up include statements, parallelized
+   a loop I had missed before.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
    * FFT.cxx: Added memory allocation functions and a convolution
    function.
    
