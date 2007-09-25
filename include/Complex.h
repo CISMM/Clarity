@@ -1,7 +1,12 @@
 #ifndef __Complex_h_
 #define __Complex_h_
 
-inline void ComplexAdd(float *c1, float *c2, float *result) {
+inline void ComplexConjugate(float* c1, float* result) {
+   result[0] =  c1[0];
+   result[1] = -c1[1];
+}
+
+inline void ComplexAdd(float* c1, float* c2, float* result) {
    result[0] = c1[0] + c2[0];
    result[1] = c1[1] + c2[1];
 }
