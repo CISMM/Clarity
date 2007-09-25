@@ -1,3 +1,7 @@
+2007-09-25 David Feng <dfeng@cs.unc.edu>
+
+   * Clarity.h: Added maximum likelihood filter function.
+   
 2007-09-25 Cory Quammen <cquammen@cs.unc.edu>
 
    * Complex.h: Added ComplexConjugate function.
