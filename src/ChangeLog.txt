@@ -1,5 +1,19 @@
 2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
 
+   * JansenVanCitterDeconvolve.cxx: Both CPU and GPU versions of
+   this algorithm will rely on the maximum value in the image
+   getting computed on the CPU, so we'll start timing after that
+   is done. If I get around to an efficient GPU reduction, we can
+   find the maximum of the image there and move the timer again.
+   
+   * WienerDeconvolve.cxx: Put the core of the filter in a
+   separate function to ease switching between CPU and GPU. Tried
+   a different formulation of the Wiener filter that seems to work
+   better than the previous formation, at least in terms of smoothing
+   noise during filtering.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
    * JansenVanCitterDeconvolve.cxx, WienerDeconvolve.cxx: Added
    timings for execution of the entire algorithm.
    

@@ -40,11 +40,9 @@ Clarity_GetImageMax(float *inImage, int numVoxels) {
 
 
 void
-Clarity_JansenVanCittertDeconvolveKernelCPU(int nx, int ny, int nz,
-                                            float* in, float inMax,
-                                            float invMaxSq,
-                                            float* i_k, float* o_k, 
-                                            float* i_kNext) {
+JansenVanCittertDeconvolveKernelCPU(int nx, int ny, int nz,
+                                    float* in, float inMax, float invMaxSq,
+                                    float* i_k, float* o_k, float* i_kNext) {
    int numVoxels = nx*ny*nz;
 
 #pragma omp parallel for
@@ -60,29 +58,28 @@ Clarity_JansenVanCittertDeconvolveKernelCPU(int nx, int ny, int nz,
 
 
 void
-Clarity_JansenVanCittertDeconvolveKernel(int nx, int ny, int nz,
-                                         float* in, float inMax,
-                                         float invMaxSq,
-                                         float* i_k, float* o_k, 
-                                         float* i_kNext) {
-   Clarity_JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, in, inMax,
-      invMaxSq, i_k, o_k, i_kNext);
+JansenVanCittertDeconvolveKernel(int nx, int ny, int nz,
+                                 float* in, float inMax, float invMaxSq,
+                                 float* i_k, float* o_k, float* i_kNext) {
+   JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, in, inMax, invMaxSq, 
+      i_k, o_k, i_kNext);
 }
 
 
 ClarityResult_t 
 Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage, 
                                    int nx, int ny, int nz, unsigned iterations) {
-
-#ifdef TIME
-   totalTimer.Start();
-#endif
-
    int numVoxels = nx*ny*nz;
    ClarityResult_t result = CLARITY_SUCCESS;
 
    // Find maximum value in the input image.
    float max = Clarity_GetImageMax(inImage, numVoxels);
+
+#ifdef TIME
+   // We'll start timing here to exclude the on-CPU maximum calculation
+   totalTimer.Start();
+#endif
+
    float A = 0.5f * max;
    float invASq = 1.0f / (A * A);
 
@@ -125,10 +122,10 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
       }
 
       if (k < iterations - 1) {
-         Clarity_JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, inImage,
+         JansenVanCittertDeconvolveKernel(nx, ny, nz, inImage,
             A, invASq, iPtr, oPtr, iPtr);
       } else {
-         Clarity_JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, inImage,
+         JansenVanCittertDeconvolveKernel(nx, ny, nz, inImage,
             A, invASq, iPtr, oPtr, outImage);
       }
    }
@@ -138,6 +135,9 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
 #ifdef TIME
    totalTimer.Stop();
    std::cout << totalTimer << std::endl;
+   std::cout << transferTimer << std::endl;
+   totalTimer.Reset();
+   transferTimer.Reset();
 #endif
 
    return CLARITY_SUCCESS;
