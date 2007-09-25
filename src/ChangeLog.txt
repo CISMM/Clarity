@@ -1,3 +1,7 @@
+2007-09-25 David Feng <dfeng@cs.unc.edu>
+   * MaximumLikelihoodDeconvolve.cxx: Basic CPU implementation of
+   the maximum likelihood deconvolution filter.
+   
 2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
 
    * JansenVanCitterDeconvolve.cxx: Both CPU and GPU versions of
