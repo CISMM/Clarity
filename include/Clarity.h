@@ -76,6 +76,6 @@ Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, float* psfImage,
 
 C_FUNC_DEF ClarityResult_t
 Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfImage,
-									int nx, int ny, int nz, int iterations);
+									int nx, int ny, int nz, unsigned iterations);
 
 #endif // VERDICT_INC_LIB
