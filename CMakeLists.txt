@@ -31,6 +31,7 @@ set( Clarity_SRCS
   src/JansenVanCittertDeconvolve.cxx
   src/SmoothedJansenVanCittertDeconvolve.cxx
   src/IDivergenceDeconvolve.cxx
+  src/MaximumLikelihoodDeconvolve.cxx
   )
   
 configure_file(
