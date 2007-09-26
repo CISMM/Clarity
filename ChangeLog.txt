@@ -1,3 +1,10 @@
+2007-09-26 Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMake/*: CMake scripts from Abe Stephens at Utah for including
+   CUDA files (relatively) painlessly in a CMake project. Note:
+   it doesn't seem to generate libraries correctly in Visual Studio 2005
+   when generating project files. NMake files, however, work just fine.
+
 2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Added Stopwatch.cxx to list of source files.
