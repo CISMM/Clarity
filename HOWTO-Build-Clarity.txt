@@ -6,6 +6,11 @@ Cory Quammen <cquammen@cs.unc.edu>
 
 2). Fire up CMake and set Clarity root directory as the source code directory, and pick a build directory.
 
+2.1). Download and install/unzip FFTW3 from http://www.fftw.org/install/windows.html.
+	Follow the instructions on that page to create the .lib files.
+2.2). In CMake, set FFT3_INCLUDE_DIR to the directory where you unzipped FFTW3
+	and FFTW3_LIBRARY to libfftw3-3.lib (the double-precision library)
+
 3). Click "Configure" and click "OK". CMake will exit.
 
 4). Navigate to the Clarity build directory set in step 2 and open Clarity.sln.

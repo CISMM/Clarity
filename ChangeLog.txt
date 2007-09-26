@@ -1,3 +1,7 @@
+2007-09-27  David Marshburn  <marshbur@cs.unc.edu>
+
+	* HOWTO-Build-Clarity.txt:  added notes related to FFTW3.
+
 2007-09-26 David Feng <dfeng@cs.unc.edu>
 
    * CMakeLists.txt: Added Stopwatch.cxx to list of source files.
