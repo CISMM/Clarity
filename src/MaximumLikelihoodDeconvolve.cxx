@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <omp.h>
 
+extern bool gCUDACapable;
+
 #ifdef TIME
 #include <iostream>
 #include "Stopwatch.h"
@@ -12,6 +14,14 @@
 static Stopwatch totalTimer("MaximumLikelihood filter (total time)");
 static Stopwatch transferTimer("MaximumLikelihood filter (transfer time)");
 #endif
+
+
+extern "C"
+void
+MaximumLikelihoodDeconvolveKernelGPU(int nx, int ny, int nz,
+                                    float* in, float inMax, float invMaxSq,
+                                    float* i_k, float* o_k, float* i_kNext);
+
 
 void
 MaximumLikelihoodDeconvolveKernelCPU(int nx, int ny, int nz,
@@ -35,8 +45,13 @@ void
 MaximumLikelihoodDeconvolveKernel(int nx, int ny, int nz,
                                  float* in, float inMax, float invMaxSq,
                                  float* i_k, float* o_k, float* i_kNext) {
-   MaximumLikelihoodDeconvolveKernelCPU(nx, ny, nz, in, inMax, invMaxSq, 
-      i_k, o_k, i_kNext);
+   if (gCUDACapable) {
+      MaximumLikelihoodDeconvolveKernelGPU(nx, ny, nz, in, inMax, invMaxSq, 
+                                           i_k, o_k, i_kNext);
+   } else {
+      MaximumLikelihoodDeconvolveKernelCPU(nx, ny, nz, in, inMax, invMaxSq, 
+                                           i_k, o_k, i_kNext);
+   }
 }
 
 

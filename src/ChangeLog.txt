@@ -1,3 +1,14 @@
+2007-09-28 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx: Added check for CUDA-capable device.
+   
+   * JansenVanCittertDeconvolve.cxx, MaximumLikelihoodDeconvolve.cxx,
+   WienerDeconvolve.cxx: Added switching between CPU and GPU kernels
+   based on whether a CUDA-capable device is available.
+   
+   * JansenVanCittertDeconvolve.cu, MaximumLikelihoodDeconvolve.cu,
+   WienerDeconvolve.cu: Stub files where CUDA kernels will go.
+
 2007-09-28 David Feng <dfeng@cs.unc.edu>
    * MaximumLikelihoodDeconvolve.cxx: Fixed some silly errors; 
    appears to work now.

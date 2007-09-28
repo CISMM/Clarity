@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <omp.h>
 
+extern bool gCUDACapable;
+
 #ifdef TIME
 #include <iostream>
 #include "Stopwatch.h"
@@ -38,6 +40,12 @@ Clarity_GetImageMax(float *inImage, int numVoxels) {
    return max;
 }
 
+extern "C"
+void
+JansenVanCittertDeconvolveKernelGPU(int nx, int ny, int nz,
+                                    float* in, float inMax, float invMaxSq,
+                                    float* i_k, float* o_k, float* i_kNext);
+
 
 void
 JansenVanCittertDeconvolveKernelCPU(int nx, int ny, int nz,
@@ -61,8 +69,13 @@ void
 JansenVanCittertDeconvolveKernel(int nx, int ny, int nz,
                                  float* in, float inMax, float invMaxSq,
                                  float* i_k, float* o_k, float* i_kNext) {
-   JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, in, inMax, invMaxSq, 
-      i_k, o_k, i_kNext);
+   if (gCUDACapable) {
+      JansenVanCittertDeconvolveKernelGPU(nx, ny, nz, in, inMax, invMaxSq, 
+                                          i_k, o_k, i_kNext);
+   } else {
+      JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, in, inMax, invMaxSq, 
+                                          i_k, o_k, i_kNext);
+   }
 }
 
 

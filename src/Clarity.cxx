@@ -1,10 +1,18 @@
 #include "Clarity.h"
 
 #include "fftw3.h"
+#include <cuda.h>
+#include <cuda_runtime_api.h>
 #include <iostream>
 #include <omp.h>
 
+#define ENABLE_CUDA
+
+/** How many clients are registered. */
 static unsigned gRegisteredClients = 0;
+
+/** Indicates that a CUDA-capable device is available. */
+bool gCUDACapable = false;
 
 ClarityResult_t
 Clarity_Register() {
@@ -13,6 +21,17 @@ Clarity_Register() {
       Clarity_SetNumberOfThreads(np);
       fftwf_init_threads();
       fftwf_plan_with_nthreads(np);
+
+#ifdef ENABLE_CUDA
+      int deviceCount = 0;
+      cudaGetDeviceCount(&deviceCount);
+      if (deviceCount >= 1) {
+         cudaDeviceProp deviceProp;
+         cudaGetDeviceProperties(&deviceProp, 0);
+         std::cout << "CUDA device found: '" << deviceProp.name << "'" << std::endl;
+         gCUDACapable = true;
+      }
+#endif
    }
    gRegisteredClients++;
 
