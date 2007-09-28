@@ -89,11 +89,11 @@ Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfI
 
    // Iterate
    for (unsigned k = 0; k < iterations; k++) {
-	  // 1. convolve h with current guess (iPtr)
-	  if (k == 0)
-         result = Clarity_Convolve_OTF(nx, ny, nz, inImage, psfFT, oPtr);
-      else
-         result = Clarity_Convolve_OTF(nx, ny, nz, iPtr, psfFT, oPtr);
+	   float *currentGuess = (k==0) ? inImage : iPtr;
+
+	  // 1. convolve h with current guess (iPtr, or inImages)
+	  result = Clarity_Convolve_OTF(nx, ny, nz, currentGuess, psfFT, oPtr);	  
+      
       if (result != CLARITY_SUCCESS) {
          break;
       }
@@ -102,8 +102,12 @@ Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfI
 	  int numVoxels = nx*ny*nz;	  
 	  #pragma omp parallel for
 	  for (int j = 0; j < numVoxels; j++) {
-		  midPtr[j] = inImage[j] / oPtr[j];
-	  }	  
+		  //midPtr[j] = inImage[j] / oPtr[j];
+		  if (oPtr[j] < .00001)
+			  midPtr[j] = 0.0f;
+		  else
+			  midPtr[j] = inImage[j] / oPtr[j];
+	  }
 
 	  // 3. Convolve result with h
 	  result = Clarity_Convolve_OTF(nx, ny, nz, midPtr, psfFT, oPtr);
@@ -112,16 +116,16 @@ Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfI
 	  }
 
 	  // 4. pointwise multiply by current guess
-	  float k = 1.0;
+	  float kappa = 1.0;
 	  if (k < iterations - 1) {
 		  #pragma omp parallel for
 		  for (int j = 0; j < numVoxels; j++) {
-		       iPtr[j] *= k * midPtr[j];
+		       iPtr[j] = kappa * currentGuess[j] * oPtr[j];
           }
 	  } else {
 		  #pragma omp parallel for
 		  for (int j = 0; j < numVoxels; j++) {
-		       outImage[j] = k * iPtr[j] * midPtr[j];
+		       outImage[j] = kappa * currentGuess[j] * oPtr[j];
           }
 	  }
    }
