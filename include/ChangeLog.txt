@@ -1,3 +1,7 @@
+2007-09-29 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.h: Changed some function names to be clearer in meaning.
+
 2007-09-26 David Feng <dfeng@cs.unc.edu>
 
    * Clarity.h: Fixed an argument type defintion (unsigned instead of int).
