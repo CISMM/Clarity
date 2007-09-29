@@ -1,18 +1,23 @@
 HOWTO for building Clarity library.
 Cory Quammen <cquammen@cs.unc.edu>
-2007-09-18
+Last update: 2007-09-28
 
 1). Check out Clarity from the Nano repository (:extssh:<username>@cvs.cs.unc.edu:/afs/cs.unc.edu/project/stm/src/CVS_repository)
 
-2). Fire up CMake and set Clarity root directory as the source code directory, and pick a build directory.
+2). Download and install/unzip FFTW3 from http://www.fftw.org/install/windows.html. Follow the instructions on that page to create the .lib files.
 
-2.1). Download and install/unzip FFTW3 from http://www.fftw.org/install/windows.html.
-	Follow the instructions on that page to create the .lib files.
-2.2). In CMake, set FFT3_INCLUDE_DIR to the directory where you unzipped FFTW3
-	and FFTW3_LIBRARY to libfftw3-3.lib (the double-precision library)
+3). Download and install CUDA Toolkit, Version 1.0 or later from http://developer.nvidia.com/object/cuda.html#downloads. By default, this installs the CUDA Toolkit in C:/CUDA, which is as good a place as any. If you are on a system with a CUDA-enabled graphics card, you should probably also install the latest NVIDIA display drivers.
 
-3). Click "Configure" and click "OK". CMake will exit.
+4). Fire up CMake and set Clarity root directory as the source code directory, and pick a build directory.
 
-4). Navigate to the Clarity build directory set in step 2 and open Clarity.sln.
+5). Set BUILD_SHARED_LIBS to "ON".
 
-5). Select a build configuration and build the solution.
+6). In CMake, set FFT3_INCLUDE_DIR to the directory where you unzipped FFTW3 and FFTW3_LIBRARY to libfftw3-3.lib (the double-precision library)
+
+7). Configure the CUDA settings, set CUDA_BUILD_TYPE to "Device". If CUDA_BUILD_TYPE does not say "C:/CUDA", select the path to your CUDA Toolkit installation path.
+
+8). Click "Configure" and click "OK". CMake will exit.
+
+9). Navigate to the Clarity build directory set in step 2 and open Clarity.sln.
+
+10). Select a build configuration and build the solution.
