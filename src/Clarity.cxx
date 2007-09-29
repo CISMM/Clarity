@@ -43,7 +43,7 @@ ClarityResult_t
 Clarity_UnRegister() {
    gRegisteredClients--;
    if (gRegisteredClients <= 0) {
-      
+      gCUDACapable = false;
    }
 
    return CLARITY_SUCCESS;

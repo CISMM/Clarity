@@ -68,11 +68,11 @@ Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfI
 
    // Fourier transform of PSF.
    float* psfFT = NULL;
-   result = Clarity_R2C_Malloc((void**) &psfFT, sizeof(float), nx, ny, nz);
+   result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       return result;
    }
-   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, psfImage, psfFT);
+   result = Clarity_FFT_R2C_float(nx, ny, nz, psfImage, psfFT);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT);
       return result;
@@ -80,7 +80,7 @@ Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfI
 
    // Set up the array holding the current guess.
    float* iPtr = NULL;
-   result = Clarity_C2R_Malloc((void**)&iPtr, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT);
       return CLARITY_OUT_OF_MEMORY;
@@ -88,7 +88,7 @@ Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfI
 
    // Storage for intermediate array
    float* midPtr = NULL;
-   result = Clarity_C2R_Malloc((void**) &midPtr, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**) &midPtr, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT); Clarity_Free(midPtr); 
       return result;
@@ -96,7 +96,7 @@ Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfI
 
    // Storage for convolution of current guess with the PSF.
    float* oPtr = NULL;
-   result = Clarity_C2R_Malloc((void**) &oPtr, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**) &oPtr, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT); Clarity_Free(midPtr); Clarity_Free(iPtr);
       return result;

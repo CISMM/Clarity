@@ -1,3 +1,19 @@
+2007-09-29 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx: If the number of registered clients of drops to zero,
+   sets the global flag indicating whether the device is capable to false.
+   Not really vital, but it is at least consistent with the notion of the
+   library returning to a consistent initialization state.
+   
+   * FFT.cxx: Added flag indicating whether a CUDA-capable device is
+   available on the system. Changed some function names. Uses FFTW
+   real-to-complex transforms to save about half the time and memory
+   in every application of a deconvolution filter.
+   
+   * JansenVanCittertDeconvolve.cxx, MaximumLikelihoodDeconvolveGPU.cxx,
+   WienerDeconvolve.cxx: Changed called function names to match what is now
+   in FFT.cxx.
+
 2007-09-28 Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.cxx: Added check for CUDA-capable device.

@@ -67,11 +67,11 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
 
    // Forward Fourier transform of input image.
    float* inFT = NULL;
-   result = Clarity_R2C_Malloc((void**) &inFT, sizeof(float), nx, ny, nz);
+   result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       return CLARITY_OUT_OF_MEMORY;
    }
-   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, inImage, inFT);
+   result = Clarity_FFT_R2C_float(nx, ny, nz, inImage, inFT);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(inFT);
       return result;
@@ -79,12 +79,12 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
 
    // Fourier transform of PSF.
    float* psfFT = NULL;
-   result = Clarity_R2C_Malloc((void**) &psfFT, sizeof(float), nx, ny, nz);
+   result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(inFT);
       return CLARITY_OUT_OF_MEMORY;
    }
-   result = Clarity_FFT_R2C_3D_float(nx, ny, nz, psfImage, psfFT);
+   result = Clarity_FFT_R2C_float(nx, ny, nz, psfImage, psfFT);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(inFT); Clarity_Free(psfFT);
       return result;
