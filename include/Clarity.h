@@ -31,6 +31,8 @@
 typedef enum {
    CLARITY_FFT_FAILED,
    CLARITY_OUT_OF_MEMORY,
+   CLARITY_DEVICE_OUT_OF_MEMORY,
+   CLARITY_INVALID_OPERATION,
    CLARITY_SUCCESS
 } ClarityResult_t;
 
@@ -77,5 +79,16 @@ Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, float* psfImage,
 C_FUNC_DEF ClarityResult_t
 Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfImage,
 									int nx, int ny, int nz, unsigned iterations);
+
+
+/*************************/
+/* CONVOLUTION FUNCTIONS */
+/*************************/
+/** Convolution function for a real image and a pre-padded and 
+* cyclically-shifted kernel. */
+C_FUNC_DEF ClarityResult_t
+Clarity_Convolve(int nx, int ny, int nz, float* inImage, float* psfImage, 
+                 float* outImage);
+
 
 #endif // VERDICT_INC_LIB

@@ -1,3 +1,20 @@
+2007-09-30 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Added some error enumerants, added an externally-accessible
+   convolution function which is generally useful.
+   
+   * Complex.h: Added ComplexMultiplyAndScale function for multiplying the
+   result of a complex multiplication by a real value.
+   
+   * ComplexCUDA.h: CUDA versions of complex math functions. Maybe want to combine
+   with the above file to eliminate redundancy.
+   
+   * FFT.h: Added functions for copying data to and from a "device" (e.g. 
+   NVIDIA 8800 GTX card). Added convenience function that allocates memory on the 
+   device and copies data from a buffer on the host. Added a function for
+   performing pixel-wise multiplication. Added an internal convolution
+   function.
+
 2007-09-29 Cory Quammen <cquammen@cs.unc.edu>
 
    * FFT.h: Changed some function names to be clearer in meaning.
