@@ -1,3 +1,21 @@
+2007-09-30 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Convolve.cxx: Contains definition of Clarity_Convolve, an externally-
+   accessible function for performing convolution.
+   
+   * FFT.cu: Added CUDA function for point-wise multiplication of pixels.
+   
+   * FFTGPU.cxx; Added functions for copying data to and from a "device" (e.g. 
+   NVIDIA 8800 GTX card). Added convenience function that allocates memory on the 
+   device and copies data from a buffer on the host. Added a function for
+   performing pixel-wise multiplication. Added an internal convolution
+   function. Incorporated CUDA FFT library.
+   
+   * WienerDeconvolve.cxx: Implemented GPU version of Wiener filter.
+   
+   * WienerDeconvolveGPU.cu: Supporting device function for GPU implementation
+   of Wiener filter.
+
 2007-09-29 Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.cxx: If the number of registered clients of drops to zero,
