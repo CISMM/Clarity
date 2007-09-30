@@ -28,10 +28,13 @@ INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}
   ${Clarity_SOURCE_DIR}/include
   ${CUDA_INCLUDE}
   )
+  
+LINK_LIBRARIES(cufft.lib)
 
 SET( Clarity_SRCS
   src/Clarity.cxx
   src/FFT.cxx
+  src/FFTGPU.cu
   src/Stopwatch.cxx
   src/WienerDeconvolve.cxx
   src/WienerDeconvolveGPU.cu
@@ -41,12 +44,15 @@ SET( Clarity_SRCS
   src/IDivergenceDeconvolve.cxx
   src/MaximumLikelihoodDeconvolve.cxx
   src/MaximumLikelihoodDeconvolveGPU.cu
+  src/Convolve.cxx
   )
   
 CONFIGURE_FILE(
   ${Clarity_SOURCE_DIR}/Clarity.h.in
   ${Clarity_BINARY_DIR}/Clarity.h
 )
+
+CUDA_INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}/include)
 
 CUDA_ADD_LIBRARY( Clarity ${Clarity_SRCS})
 

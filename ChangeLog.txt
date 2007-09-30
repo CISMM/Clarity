@@ -1,3 +1,8 @@
+2007-09-30  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added source files and now links to cufft.lib
+   (CUDA FFT library).
+
 2007-09-28  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Added CUDA source files and inclusion of
