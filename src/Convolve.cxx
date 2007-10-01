@@ -4,6 +4,14 @@
 
 extern bool gCUDACapable;
 
+#ifdef TIME
+#include <iostream>
+#include "Stopwatch.h"
+
+static Stopwatch totalTimer("JansenVanCittert filter (total time)");
+static Stopwatch transferTimer("JansenVanCittert filter (transfer time)");
+#endif
+
 ClarityResult_t
 Clarity_Convolve(int nx, int ny, int nz, float* inImage, float* psfImage,
                  float* outImage) {

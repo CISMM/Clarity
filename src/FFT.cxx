@@ -9,6 +9,11 @@
 
 extern bool gCUDACapable;
 
+#ifdef TIME
+#include <iostream>
+#include "Stopwatch.h"
+#endif
+
 
 ClarityResult_t
 Clarity_Complex_Malloc(void** buffer, size_t size, int nx, int ny, int nz) {
@@ -126,7 +131,16 @@ Clarity_FFT_R2C_float(int nx, int ny, int nz, float* in, float* out) {
       if (cufftResult != CUFFT_SUCCESS) {
          return CLARITY_FFT_FAILED;
       }
+#ifdef TIME
+      Stopwatch timer;
+      timer.Start();
+#endif
       cufftResult = cufftExecR2C(plan, (cufftReal*)in, (cufftComplex*)out);
+#ifdef TIME
+      timer.Stop();
+      std::cout << "R2C: " << timer << std::endl;
+#endif
+
       cufftDestroy(plan);
       if (cufftResult != CUFFT_SUCCESS) {
          return CLARITY_FFT_FAILED;
@@ -142,7 +156,16 @@ Clarity_FFT_R2C_float(int nx, int ny, int nz, float* in, float* out) {
       if (plan == NULL) {
          return CLARITY_FFT_FAILED;
       }
+#ifdef TIME
+      Stopwatch timer;
+      timer.Start();
+#endif
       fftwf_execute(plan);
+#ifdef TIME
+      timer.Stop();
+      std::cout << "R2C: " << timer << std::endl;
+#endif
+
       fftwf_destroy_plan(plan);
    }
 
@@ -231,12 +254,7 @@ Clarity_Convolve_OTF(int nx, int ny, int nz, float* in, float* otf, float* out) 
    Clarity_Modulate(nx, ny, nz, inFT, otf, inFT);
 
    result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, out);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(&inFT);
-      return result;
-   }
-
-   Clarity_Free(&inFT);
+   Clarity_Free(inFT);
 
    return result;
 }

@@ -1,3 +1,14 @@
+2007-10-01 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Convolve.cxx: Added declaration of timers that I had forgotten.
+   
+   * FFT.cxx: Added some timings around CUFFT and FFTW functions that
+   execute the FFT.
+   
+   * JansenVanCittertDeconvolve.cxx: Implemented on GPU.
+   
+   * JansenVanCittertDeconvolve.cu: Added kernel implementation.
+
 2007-09-30 Cory Quammen <cquammen@cs.unc.edu>
 
    * Convolve.cxx: Contains definition of Clarity_Convolve, an externally-

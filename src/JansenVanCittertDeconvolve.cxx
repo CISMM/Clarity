@@ -2,6 +2,7 @@
 #include "Complex.h"
 #include "FFT.h"
 
+#include <iostream>
 #include <stdlib.h>
 #include <omp.h>
 
@@ -40,12 +41,6 @@ Clarity_GetImageMax(float *inImage, int numVoxels) {
    return max;
 }
 
-extern "C"
-void
-JansenVanCittertDeconvolveKernelGPU(int nx, int ny, int nz,
-                                    float* in, float inMax, float invMaxSq,
-                                    float* i_k, float* o_k, float* i_kNext);
-
 
 void
 JansenVanCittertDeconvolveKernelCPU(int nx, int ny, int nz,
@@ -65,34 +60,10 @@ JansenVanCittertDeconvolveKernelCPU(int nx, int ny, int nz,
 }
 
 
-void
-JansenVanCittertDeconvolveKernel(int nx, int ny, int nz,
-                                 float* in, float inMax, float invMaxSq,
-                                 float* i_k, float* o_k, float* i_kNext) {
-   if (gCUDACapable) {
-      JansenVanCittertDeconvolveKernelGPU(nx, ny, nz, in, inMax, invMaxSq, 
-                                          i_k, o_k, i_kNext);
-   } else {
-      JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, in, inMax, invMaxSq, 
-                                          i_k, o_k, i_kNext);
-   }
-}
-
-
 ClarityResult_t 
-Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage, 
-                                   int nx, int ny, int nz, unsigned iterations) {
-   int numVoxels = nx*ny*nz;
+Clarity_JansenVanCittertDeconvolveCPU(float* outImage, float* inImage, float* psfImage, 
+                                      int nx, int ny, int nz, float max, unsigned iterations) {
    ClarityResult_t result = CLARITY_SUCCESS;
-
-   // Find maximum value in the input image.
-   float max = Clarity_GetImageMax(inImage, numVoxels);
-
-#ifdef TIME
-   // We'll start timing here to exclude the on-CPU maximum calculation
-   totalTimer.Start();
-#endif
-
    float A = 0.5f * max;
    float invASq = 1.0f / (A * A);
 
@@ -124,26 +95,151 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
       return result;
    }
 
+   // First iteration.
+   result = Clarity_Convolve_OTF(nx, ny, nz, inImage, psfFT, oPtr);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT); Clarity_Free(oPtr); Clarity_Free(iPtr);
+      return result;
+   }
+   if (iterations > 1) {
+      JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, inImage, A, invASq,
+         inImage, oPtr, iPtr);
+   } else {
+      JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, inImage, A, invASq,
+         inImage, oPtr, outImage);
+   }
+
    // Iterate
-   for (unsigned k = 0; k < iterations; k++) {
-      if (k == 0)
-         result = Clarity_Convolve_OTF(nx, ny, nz, inImage, psfFT, oPtr);
-      else
-         result = Clarity_Convolve_OTF(nx, ny, nz, iPtr, psfFT, oPtr);
-      if (result != CLARITY_SUCCESS) {
-         break;
-      }
+   for (unsigned k = 1; k < iterations; k++) {
+      result = Clarity_Convolve_OTF(nx, ny, nz, iPtr, psfFT, oPtr);
+      if (result != CLARITY_SUCCESS) break;
 
       if (k < iterations - 1) {
-         JansenVanCittertDeconvolveKernel(nx, ny, nz, inImage,
+         JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, inImage,
             A, invASq, iPtr, oPtr, iPtr);
       } else {
-         JansenVanCittertDeconvolveKernel(nx, ny, nz, inImage,
+         JansenVanCittertDeconvolveKernelCPU(nx, ny, nz, inImage,
             A, invASq, iPtr, oPtr, outImage);
       }
    }
 
    Clarity_Free(psfFT); Clarity_Free(oPtr); Clarity_Free(iPtr);
+
+   return result;
+}
+
+
+extern "C"
+void
+JansenVanCittertDeconvolveKernelGPU(int nx, int ny, int nz,
+                                    float* in, float inMax, float invMaxSq,
+                                    float* i_k, float* o_k, float* i_kNext);
+
+
+ClarityResult_t 
+Clarity_JansenVanCittertDeconvolveGPU(float* outImage, float* inImage, float* psfImage, 
+                                      int nx, int ny, int nz, float max, unsigned iterations) {
+   ClarityResult_t result = CLARITY_SUCCESS;
+   float A = 0.5f * max;
+   float invASq = 1.0f / (A * A);
+
+   // Copy over PSF and take its Fourier transform.
+   float* psf = NULL;
+   result = Clarity_Real_MallocCopy((void**) &psf, sizeof(float), 
+      nx, ny, nz, psfImage);
+   if (result != CLARITY_SUCCESS) {
+      return result;
+   }
+   float* psfFT = NULL;
+   result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), 
+      nx, ny, nz);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psf);
+      return result;
+   }
+   result = Clarity_FFT_R2C_float(nx, ny, nz, psf, psfFT);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psf); Clarity_Free(psfFT);
+      return result;
+   }
+   Clarity_Free(psf);
+
+   // Copy over image.
+   float* in = NULL;
+   result = Clarity_Real_MallocCopy((void**) &in, sizeof(float), 
+      nx, ny, nz, inImage);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT);
+      return result;
+   }
+
+   // Set up the array holding the current guess.
+   float* iPtr = NULL;
+   result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float), nx, ny, nz);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT); Clarity_Free(in);
+      return result;
+   }
+
+   // Storage for convolution of current guess with the PSF.
+   float* oPtr = NULL;
+   result = Clarity_Real_Malloc((void**)&oPtr, sizeof(float), nx, ny, nz);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr);
+      return result;
+   }
+
+   // First iteration.
+   result = Clarity_Convolve_OTF(nx, ny, nz, in, psfFT, oPtr);
+   if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT); Clarity_Free(in);
+      Clarity_Free(iPtr); Clarity_Free(oPtr);
+      return result;
+   }
+   JansenVanCittertDeconvolveKernelGPU(nx, ny, nz, in, A, invASq, in,
+      oPtr, iPtr);
+
+   // Iterate
+   for (unsigned k = 1; k < iterations; k++) {
+      result = Clarity_Convolve_OTF(nx, ny, nz, iPtr, psfFT, oPtr);
+      if (result != CLARITY_SUCCESS) {
+         break;
+      }
+      JansenVanCittertDeconvolveKernelGPU(nx, ny, nz, in, A, invASq,
+         iPtr, oPtr, iPtr);
+   }
+
+   // Copy result from device.
+   result = Clarity_CopyFromDevice(nx, ny, nz, sizeof(float), outImage, iPtr);
+
+   Clarity_Free(psfFT); Clarity_Free(in);
+   Clarity_Free(iPtr); Clarity_Free(oPtr);
+
+   return result;
+}
+
+
+ClarityResult_t 
+Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage, 
+                                   int nx, int ny, int nz, unsigned iterations) {
+   ClarityResult_t result;
+
+   // Find maximum value in the input image.
+   float max = Clarity_GetImageMax(inImage, nx*ny*nz);
+
+#ifdef TIME
+   // We'll start timing here to exclude the on-CPU maximum calculation
+   totalTimer.Start();
+#endif
+
+   if (gCUDACapable) {
+      result = Clarity_JansenVanCittertDeconvolveGPU(outImage, inImage, psfImage,
+         nx, ny, nz, max, iterations);
+   } else {
+      result = Clarity_JansenVanCittertDeconvolveCPU(outImage, inImage, psfImage,
+         nx, ny, nz, max, iterations);
+   }
+
 
 #ifdef TIME
    totalTimer.Stop();
@@ -153,5 +249,5 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
    transferTimer.Reset();
 #endif
 
-   return CLARITY_SUCCESS;
+   return result;
 }
