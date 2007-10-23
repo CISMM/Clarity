@@ -1,12 +1,13 @@
 #include "Clarity.h"
 
 #include "fftw3.h"
-#include <cuda.h>
-#include <cuda_runtime_api.h>
 #include <iostream>
 #include <omp.h>
 
-#define ENABLE_CUDA
+#ifdef BUILD_WITH_CUDA
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#endif
 
 /** How many clients are registered. */
 static unsigned gRegisteredClients = 0;
@@ -22,7 +23,7 @@ Clarity_Register() {
       fftwf_init_threads();
       fftwf_plan_with_nthreads(np);
 
-#ifdef ENABLE_CUDA
+#ifdef BUILD_WITH_CUDA
       int deviceCount = 0;
       cudaGetDeviceCount(&deviceCount);
       if (deviceCount >= 1) {

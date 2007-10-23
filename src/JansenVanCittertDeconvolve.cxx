@@ -128,6 +128,7 @@ Clarity_JansenVanCittertDeconvolveCPU(float* outImage, float* inImage, float* ps
    return result;
 }
 
+#ifdef BUILD_WITH_CUDA
 
 extern "C"
 void
@@ -218,6 +219,7 @@ Clarity_JansenVanCittertDeconvolveGPU(float* outImage, float* inImage, float* ps
    return result;
 }
 
+#endif // BUILD_WITH_CUDA
 
 ClarityResult_t 
 Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage, 
@@ -232,14 +234,16 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
    totalTimer.Start();
 #endif
 
+#ifdef BUILD_WITH_CUDA
    if (gCUDACapable) {
       result = Clarity_JansenVanCittertDeconvolveGPU(outImage, inImage, psfImage,
          nx, ny, nz, max, iterations);
-   } else {
+   } else
+#endif // BUILD_WITH_CUDA
+   {
       result = Clarity_JansenVanCittertDeconvolveCPU(outImage, inImage, psfImage,
          nx, ny, nz, max, iterations);
    }
-
 
 #ifdef TIME
    totalTimer.Stop();

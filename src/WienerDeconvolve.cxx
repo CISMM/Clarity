@@ -81,6 +81,8 @@ Clarity_WienerDeconvolveCPU(float* outImage, float* inImage, float* psfImage,
 }
 
 
+#ifdef BUILD_WITH_CUDA
+
 extern "C"
 void
 WienerDeconvolveKernelGPU(int nx, int ny, int nz, float* inFT, float* psfFT, 
@@ -148,6 +150,8 @@ Clarity_WienerDeconvolveGPU(float* outImage, float* inImage, float* psfImage,
    return result;
 }
 
+#endif // BUILD_WITH_CUDA
+
 
 #ifdef CONVOLUTION
 
@@ -166,10 +170,14 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
 #ifdef TIME
    totalTimer.Start();
 #endif
+
+#ifdef BUILD_WITH_CUDA
    if (gCUDACapable) {
       return Clarity_WienerDeconvolveGPU(outImage, inImage, psfImage,
          nx, ny, nz, noiseStdDev, epsilon);
-   } else {
+   } else
+#endif // BUILD_WITH_CUDA
+   {
       return Clarity_WienerDeconvolveCPU(outImage, inImage, psfImage,
          nx, ny, nz, noiseStdDev, epsilon);
    }

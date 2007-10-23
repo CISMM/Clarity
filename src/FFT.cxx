@@ -1,11 +1,14 @@
+#include "Clarity.h"
 #include "FFT.h"
-
 #include "Complex.h"
 
+#include <fftw3.h>
+
+#ifdef BUILD_WITH_CUDA
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cufft.h>
-#include <fftw3.h>
+#endif
 
 extern bool gCUDACapable;
 
@@ -20,12 +23,15 @@ Clarity_Complex_Malloc(void** buffer, size_t size, int nx, int ny, int nz) {
    ClarityResult_t result = CLARITY_SUCCESS;
 
    size_t totalSize = size*2*nz*ny*(nx/2 + 1);
+#ifdef BUILD_WITH_CUDA
    if (gCUDACapable) {
       cudaError_t cudaResult = cudaMalloc(buffer, totalSize);
       if (cudaResult != cudaSuccess) {
          return CLARITY_DEVICE_OUT_OF_MEMORY;
       }
-   } else {
+   } else 
+#endif // BUILD_WITH_CUDA
+   {
       *buffer = fftwf_malloc(totalSize);
       if (*buffer == NULL) {
          result = CLARITY_OUT_OF_MEMORY;
@@ -41,12 +47,15 @@ Clarity_Real_Malloc(void** buffer, size_t size, int nx, int ny, int nz) {
    ClarityResult_t result = CLARITY_SUCCESS;
 
    size_t totalSize = size*nz*ny*nx;
+#ifdef BUILD_WITH_CUDA
    if (gCUDACapable) {
       cudaError_t cudaResult = cudaMalloc(buffer, totalSize);
       if (cudaResult != cudaSuccess) {
          return CLARITY_DEVICE_OUT_OF_MEMORY;
       }
-   } else {
+   } else
+#endif // BUILD_WITH_CUDA
+   {
       *buffer = fftwf_malloc(sizeof(size)*nz*ny*nx);
       if (*buffer == NULL) {
          result = CLARITY_OUT_OF_MEMORY;
@@ -62,12 +71,14 @@ Clarity_CopyToDevice(int nx, int ny, int nz, size_t size, void* dst, void* src) 
    if (!gCUDACapable)
       return CLARITY_INVALID_OPERATION;
 
+#ifdef BUILD_WITH_CUDA
    size_t totalSize = size*nx*ny*nz;
    cudaError_t cudaResult = cudaMemcpy(dst, src, totalSize,
       cudaMemcpyHostToDevice);
    if (cudaResult != cudaSuccess) {
       return CLARITY_INVALID_OPERATION;
    }
+#endif
 
    return CLARITY_SUCCESS;
 }
@@ -78,12 +89,14 @@ Clarity_CopyFromDevice(int nx, int ny, int nz, size_t size, void* dst, void* src
    if (!gCUDACapable)
       return CLARITY_INVALID_OPERATION;
 
+#ifdef BUILD_WITH_CUDA
    size_t totalSize = size*nx*ny*nz;
    cudaError_t cudaResult = cudaMemcpy(dst, src, totalSize,
       cudaMemcpyDeviceToHost);
    if (cudaResult != cudaSuccess) {
       return CLARITY_INVALID_OPERATION;
    }
+#endif
 
    return CLARITY_SUCCESS;
 }
@@ -114,9 +127,12 @@ void
 Clarity_Free(void* buffer) {
    if (buffer == NULL)
       return;
+#ifdef BUILD_WITH_CUDA
    if (gCUDACapable) {
       cudaFree(buffer);
-   } else {
+   } else
+#endif // BUILD_WITH_CUDA
+   {
       fftwf_free(buffer);
    }
 }
@@ -125,6 +141,7 @@ Clarity_Free(void* buffer) {
 ClarityResult_t
 Clarity_FFT_R2C_float(int nx, int ny, int nz, float* in, float* out) {
 
+#ifdef BUILD_WITH_CUDA
    if (gCUDACapable) {
       cufftHandle plan;
       cufftResult cufftResult = cufftPlan3d(&plan, nz, ny, nx, CUFFT_R2C);
@@ -145,7 +162,9 @@ Clarity_FFT_R2C_float(int nx, int ny, int nz, float* in, float* out) {
       if (cufftResult != CUFFT_SUCCESS) {
          return CLARITY_FFT_FAILED;
       }
-   } else {
+   } else 
+#endif // BUILD_WITH_CUDA
+    {
       fftwf_complex* outComplex = (fftwf_complex*) out;
 
       // Holy smokes, I wasted a lot of time just to find that FFTW
@@ -177,6 +196,7 @@ ClarityResult_t
 Clarity_FFT_C2R_float(int nx, int ny, int nz, float* in, float* out) {
    int numVoxels = nx*ny*nz;
 
+#ifdef BUILD_WITH_CUDA
    if (gCUDACapable) {
       cufftHandle plan;
       cufftResult cufftResult = cufftPlan3d(&plan, nz, ny, nx, CUFFT_C2R);
@@ -188,7 +208,9 @@ Clarity_FFT_C2R_float(int nx, int ny, int nz, float* in, float* out) {
       if (cufftResult != CUFFT_SUCCESS) {
          return CLARITY_FFT_FAILED;
       }
-   } else {
+   } else
+#endif
+   {
       fftwf_complex* inComplex = (fftwf_complex*) in;
 
       // Holy smokes, I wasted a lot of time just to find that FFTW expects
@@ -207,10 +229,12 @@ Clarity_FFT_C2R_float(int nx, int ny, int nz, float* in, float* out) {
 }
 
 
+#ifdef BUILD_WITH_CUDA
 extern "C"
 void
 Clarity_Modulate_KernelGPU(int nx, int ny, int nz, float* inFT,
                            float* otf, float* outFT);
+#endif
 
 
 void
@@ -224,7 +248,7 @@ Clarity_Modulate_KernelCPU(int nx, int ny, int nz, float* inFT,
    }
 }
 
-
+#ifdef BUILD_WITH_CUDA
 void
 Clarity_Modulate(int nx, int ny, int nz, float* in, float* otf, float* out) {
    if (gCUDACapable) {
@@ -233,6 +257,12 @@ Clarity_Modulate(int nx, int ny, int nz, float* in, float* otf, float* out) {
       Clarity_Modulate_KernelCPU(nx, ny, nz, in, otf, out);
    }
 }
+#else
+void
+Clarity_Modulate(int nx, int ny, int nz, float* in, float* otf, float* out) {
+   Clarity_Modulate_KernelCPU(nx, ny, nz, in, otf, out);
+}
+#endif
 
 
 ClarityResult_t
