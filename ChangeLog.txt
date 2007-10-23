@@ -1,3 +1,13 @@
+2007-10-23  Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.h.in: Fixed Clarity version number derived from
+	CMakeLists.txt. Added BUILD_WITH_CUDA macro derived from
+	CMake configuration.
+	
+	* CMakeLists.txt: Added option to build with CUDA or not.
+	
+	* HOWTO-Build-Clarity.txt: Updated build instructions.
+
 2007-09-30  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Added source files and now links to cufft.lib
