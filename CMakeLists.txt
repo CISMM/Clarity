@@ -48,6 +48,8 @@ SET( Clarity_SRCS
   src/MaximumLikelihoodDeconvolve.cxx
   src/MaximumLikelihoodDeconvolveGPU.cu
   src/Convolve.cxx
+  src/ImageClip.cxx
+  src/ImagePadSpatialShift.cxx
   )
   
 CONFIGURE_FILE(

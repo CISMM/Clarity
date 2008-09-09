@@ -1,3 +1,8 @@
+2008-09-08  Cory Quammen <cquammen@cs.unc.edu>
+
+	* CMakeLists.txt: Added source files ImageClip.cxx and
+	ImagePadSpatialShift.cxx.
+
 2007-10-23  Cory Quammen <cquammen@cs.unc.edu>
 
 	* Clarity.h.in: Fixed Clarity version number derived from
