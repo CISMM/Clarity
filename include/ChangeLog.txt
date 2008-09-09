@@ -1,3 +1,8 @@
+2008-09-08  Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.h: Added documentation for each publicly-accessible function
+	in the library. Also, added a new error enum, CLARITY_INVALID_ARGUMENT.
+
 2007-09-30 Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.h: Added some error enumerants, added an externally-accessible
