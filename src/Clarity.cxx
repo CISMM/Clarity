@@ -18,10 +18,9 @@ bool gCUDACapable = false;
 ClarityResult_t
 Clarity_Register() {
    if (gRegisteredClients <= 0) {
+      fftwf_init_threads();
       int np = omp_get_num_procs();
       Clarity_SetNumberOfThreads(np);
-      fftwf_init_threads();
-      fftwf_plan_with_nthreads(np);
 
 #ifdef BUILD_WITH_CUDA
       int deviceCount = 0;
@@ -44,6 +43,7 @@ ClarityResult_t
 Clarity_UnRegister() {
    gRegisteredClients--;
    if (gRegisteredClients <= 0) {
+      fftwf_cleanup_threads();
       gCUDACapable = false;
    }
 

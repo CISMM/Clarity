@@ -1,3 +1,19 @@
+2008-09-08  Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.cxx: Reorganized calling of FFTW initialization routines.
+	
+	* Convolve.cxx: Changed parameter name from psfImage to more generic
+	kernel.
+	
+	* ImageClip.cxx: New file that crops an image. Useful for clipping a padded
+	image used in FFT-based convolution.
+	
+	* ImagePadSpatialShift.cxx: New file with a utility function to pad and
+	shift convolution kernel images.
+	
+	* WienerDeconvolve.cxx: Removed noise standard deviation parameter that
+	was getting passed around in related functions, but never used.
+
 2007-10-23 Cory Quammen <cquammen@cs.unc.edu>
 
 	* Clarity.cxx: Modified to use BUILD_WITH_CUDA ifdef that is derived

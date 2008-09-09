@@ -13,7 +13,7 @@ static Stopwatch transferTimer("JansenVanCittert filter (transfer time)");
 #endif
 
 ClarityResult_t
-Clarity_Convolve(int nx, int ny, int nz, float* inImage, float* psfImage,
+Clarity_Convolve(int nx, int ny, int nz, float* inImage, float* kernel,
                  float* outImage) {
 #ifdef TIME
    totalTimer.Start();
@@ -32,7 +32,7 @@ Clarity_Convolve(int nx, int ny, int nz, float* inImage, float* psfImage,
          return result;
       }
       result = Clarity_Real_MallocCopy((void **) &psf, sizeof(float), 
-         nx, ny, nz, psfImage);
+         nx, ny, nz, kernel);
       if (result != CLARITY_SUCCESS) {
          Clarity_Free(in);
          return result;
@@ -43,7 +43,7 @@ Clarity_Convolve(int nx, int ny, int nz, float* inImage, float* psfImage,
 
    } else {
 
-      Clarity_ConvolveInternal(nx, ny, nz, inImage, psfImage, outImage);
+      Clarity_ConvolveInternal(nx, ny, nz, inImage, kernel, outImage);
    }
 
 #ifdef TIME

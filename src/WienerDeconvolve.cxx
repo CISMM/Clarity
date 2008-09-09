@@ -23,7 +23,7 @@ extern bool gCUDACapable;
 
 void
 WienerDeconvolveKernelCPU(int nx, int ny, int nz, float* inFT, float* psfFT, 
-                          float* result, float sigma, float epsilon) {
+                          float* result, float epsilon) {
    int numVoxels = nz*ny*(nx/2 + 1);
    float scale = 1.0f / ((float) nz*ny*nx);
 
@@ -42,7 +42,7 @@ WienerDeconvolveKernelCPU(int nx, int ny, int nz, float* inFT, float* psfFT,
 
 ClarityResult_t
 Clarity_WienerDeconvolveCPU(float* outImage, float* inImage, float* psfImage,
-                            int nx, int ny, int nz, float noiseStdDev, float epsilon) {
+                            int nx, int ny, int nz, float epsilon) {
    ClarityResult_t result = CLARITY_SUCCESS;
 
    // Forward Fourier transform of input image.
@@ -70,7 +70,7 @@ Clarity_WienerDeconvolveCPU(float* outImage, float* inImage, float* psfImage,
       return result;
    }
 
-   WienerDeconvolveKernelCPU(nx, ny, nz, inFT, psfFT, inFT, noiseStdDev, epsilon);
+   WienerDeconvolveKernelCPU(nx, ny, nz, inFT, psfFT, inFT, epsilon);
 
    result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, outImage);
 
@@ -86,12 +86,12 @@ Clarity_WienerDeconvolveCPU(float* outImage, float* inImage, float* psfImage,
 extern "C"
 void
 WienerDeconvolveKernelGPU(int nx, int ny, int nz, float* inFT, float* psfFT, 
-                          float* outFT, float sigma, float epsilon);
+                          float* outFT, float epsilon);
 
 
 ClarityResult_t
 Clarity_WienerDeconvolveGPU(float* outImage, float* inImage, float* psfImage,
-                            int nx, int ny, int nz, float noiseStdDev, float epsilon) {
+                            int nx, int ny, int nz, float epsilon) {
    ClarityResult_t result = CLARITY_SUCCESS;
 
    // Send PSF image.
@@ -139,8 +139,7 @@ Clarity_WienerDeconvolveGPU(float* outImage, float* inImage, float* psfImage,
    }
 
    // Apply Wiener filter
-   WienerDeconvolveKernelGPU(nx, ny, nz, inFT, psfFT, inFT, 
-      noiseStdDev, epsilon);
+   WienerDeconvolveKernelGPU(nx, ny, nz, inFT, psfFT, inFT, epsilon);
 
    result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, in);
    
@@ -165,7 +164,7 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
 
 ClarityResult_t 
 Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage, 
-                         int nx, int ny, int nz, float noiseStdDev, float epsilon) {
+                         int nx, int ny, int nz, float epsilon) {
 
 #ifdef TIME
    totalTimer.Start();
@@ -174,12 +173,12 @@ Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
 #ifdef BUILD_WITH_CUDA
    if (gCUDACapable) {
       return Clarity_WienerDeconvolveGPU(outImage, inImage, psfImage,
-         nx, ny, nz, noiseStdDev, epsilon);
+         nx, ny, nz, epsilon);
    } else
 #endif // BUILD_WITH_CUDA
    {
       return Clarity_WienerDeconvolveCPU(outImage, inImage, psfImage,
-         nx, ny, nz, noiseStdDev, epsilon);
+         nx, ny, nz, epsilon);
    }
 
 #ifdef TIME
