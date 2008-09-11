@@ -1,3 +1,7 @@
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+	* CMakeLists.txt: Added source file BlindMaximumLikelihoodDeconvolve.cxx.
+
 2008-09-08  Cory Quammen <cquammen@cs.unc.edu>
 
 	* CMakeLists.txt: Added source files ImageClip.cxx and

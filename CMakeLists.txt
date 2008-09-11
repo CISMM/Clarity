@@ -47,6 +47,7 @@ SET( Clarity_SRCS
   src/IDivergenceDeconvolve.cxx
   src/MaximumLikelihoodDeconvolve.cxx
   src/MaximumLikelihoodDeconvolveGPU.cu
+  src/BlindMaximumLikelihoodDeconvolve.cxx
   src/Convolve.cxx
   src/ImageClip.cxx
   src/ImagePadSpatialShift.cxx
