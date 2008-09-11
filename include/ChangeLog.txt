@@ -1,5 +1,11 @@
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
+   * Moved all "private" library headers from this level down to new
+   internal directory. Clarity.h, which contains functions the library
+   exposes to clients, remains here.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
 	* Clarity.h: Added function Clarity_BlindMaximumLikelihoodDeconvolve.
 	
 	* MaximumLikelihoodDeconvolve.h: Added function prototypes for
