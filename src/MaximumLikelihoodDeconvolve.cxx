@@ -224,7 +224,7 @@ Clarity_MaximumLikelihoodDeconvolveGPU(
    // Iterate
    for (unsigned k = 0; k < iterations; k++) {
       float* currentGuess = (k == 0 ? in : iPtr);
-      float* newGuess     = currentGuess;
+      float* newGuess     = iPtr;
 
       result = Clarity_MaximumLikelihoodUpdateGPU(nx, ny, nz, 
          in, currentGuess, psfFT, s1, s2, newGuess);

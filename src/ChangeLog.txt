@@ -1,5 +1,11 @@
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
+   * MaximumLikelihoodDeconvolve.cxx, BlindMaximumLikelihoodDeconvolve.cxx:
+   Fixed a bug where I was overwriting the original image data, which is
+   needed throughout the algorithm.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
    * BlindMaximumLikelihoodDeconvolve.cxx, Clarity.cxx,
    IDivergenceDeconvolve.cxx, ImageClip.cxx, ImagePadSpatialShift.cxx,
    JansenVanCittertDeconvolve.cxx, JansenVanCittertDeconvolveGPU.cu,
