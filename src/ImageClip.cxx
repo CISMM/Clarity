@@ -4,8 +4,8 @@
 // shifting is a low-frequency operation.
 // Assumes adequate CPU side memory has been allocated in dst.
 ClarityResult_t
-Clarity_ImageClip(float *dst, int dstDim[3],
-                  float *src, int srcDim[3]) {
+Clarity_ImageClip(
+   float *dst, int dstDim[3], float *src, int srcDim[3]) {
    
    if (dst == NULL || src == NULL) {
       return CLARITY_INVALID_ARGUMENT;

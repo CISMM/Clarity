@@ -1,6 +1,6 @@
 #include "Clarity.h"
 
-#include "fftw3.h"
+#include <fftw3.h>
 #include <iostream>
 #include <omp.h>
 
@@ -10,14 +10,14 @@
 #endif
 
 /** How many clients are registered. */
-static unsigned gRegisteredClients = 0;
+static unsigned g_RegisteredClients = 0;
 
 /** Indicates that a CUDA-capable device is available. */
-bool gCUDACapable = false;
+bool g_CUDACapable = false;
 
 ClarityResult_t
 Clarity_Register() {
-   if (gRegisteredClients <= 0) {
+   if (g_RegisteredClients <= 0) {
       fftwf_init_threads();
       int np = omp_get_num_procs();
       Clarity_SetNumberOfThreads(np);
@@ -29,11 +29,11 @@ Clarity_Register() {
          cudaDeviceProp deviceProp;
          cudaGetDeviceProperties(&deviceProp, 0);
          std::cout << "CUDA device found: '" << deviceProp.name << "'" << std::endl;
-         gCUDACapable = true;
+         g_CUDACapable = true;
       }
 #endif
    }
-   gRegisteredClients++;
+   g_RegisteredClients++;
 
    return CLARITY_SUCCESS;
 }
@@ -41,10 +41,10 @@ Clarity_Register() {
 
 ClarityResult_t
 Clarity_UnRegister() {
-   gRegisteredClients--;
-   if (gRegisteredClients <= 0) {
+   g_RegisteredClients--;
+   if (g_RegisteredClients <= 0) {
       fftwf_cleanup_threads();
-      gCUDACapable = false;
+      g_CUDACapable = false;
    }
 
    return CLARITY_SUCCESS;

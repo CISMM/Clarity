@@ -1,13 +1,14 @@
 #include "Clarity.h"
-#include "MaximumLikelihoodDeconvolve.h"
-#include "Complex.h"
-#include "FFT.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <omp.h>
 
-extern bool gCUDACapable;
+#include "MaximumLikelihoodDeconvolve.h"
+#include "FFT.h"
+#include "Memory.h"
+
+extern bool g_CUDACapable;
 
 #ifdef TIME
 #include <iostream>
@@ -39,7 +40,8 @@ Clarity_BlindMaximumLikelihoodDeconvolveCPU(
 
    // Set up the array holding the current guess.
    float* iPtr = NULL;
-   result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float), 
+      nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT);
       return CLARITY_OUT_OF_MEMORY;
@@ -47,7 +49,8 @@ Clarity_BlindMaximumLikelihoodDeconvolveCPU(
 
    // Storage for two intermediate arrays
    float* s1 = NULL;
-   result = Clarity_Real_Malloc((void**) &s1, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**) &s1, sizeof(float), 
+      nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT); Clarity_Free(iPtr); 
       return result;
@@ -55,7 +58,8 @@ Clarity_BlindMaximumLikelihoodDeconvolveCPU(
 
    // Storage for convolution of current guess with the PSF.
    float* s2 = NULL;
-   result = Clarity_Real_Malloc((void**) &s2, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**) &s2, sizeof(float), 
+      nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT); Clarity_Free(iPtr); Clarity_Free(s1);
       return result;
@@ -66,8 +70,8 @@ Clarity_BlindMaximumLikelihoodDeconvolveCPU(
       float* currentGuess = (k == 0 ? inImage : iPtr);
       float* newGuess     = (k == iterations-1 ? outImage : iPtr);
 
-      result = Clarity_MaximumLikelihoodUpdateCPU(nx, ny, nz, inImage, 
-         currentGuess, psfFT, s1, s2, newGuess);
+      result = Clarity_MaximumLikelihoodUpdateCPU(nx, ny, nz, 
+         inImage, currentGuess, psfFT, s1, s2, newGuess);
       if (result != CLARITY_SUCCESS) {
          Clarity_Free(psfFT); Clarity_Free(iPtr); 
          Clarity_Free(s1); Clarity_Free(s2);
@@ -83,21 +87,13 @@ Clarity_BlindMaximumLikelihoodDeconvolveCPU(
 
 #ifdef BUILD_WITH_CUDA
 
-extern "C"
-void
-MaximumLikelihoodDivideKernelGPU(int nx, int ny, int nz,
-                                 float* out, float *a, float *b);
-
-extern "C"
-void
-MaximumLikelihoodMultiplyKernelGPU(int nx, int ny, int nz, float *out, float kappa, 
-                                   float *a, float *b);
-
+#include "MaximumLikelihoodDeconvolveGPU.h"
 
 ClarityResult_t 
-Clarity_BlindMaximumLikelihoodDeconvolveGPU(float* outImage, float* inImage, 
-                                            float* psfImage, int nx, int ny, int nz, 
-                                            unsigned iterations) {
+Clarity_BlindMaximumLikelihoodDeconvolveGPU(
+   float* outImage, float* inImage, float* psfImage, 
+   int nx, int ny, int nz, unsigned iterations) {
+
    ClarityResult_t result = CLARITY_SUCCESS;
 
    // Copy over PSF and take its Fourier transform.
@@ -132,7 +128,8 @@ Clarity_BlindMaximumLikelihoodDeconvolveGPU(float* outImage, float* inImage,
 
    // Set up the array holding the current guess.
    float* iPtr = NULL;
-   result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float), 
+      nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT); Clarity_Free(in);
       return result;
@@ -140,13 +137,15 @@ Clarity_BlindMaximumLikelihoodDeconvolveGPU(float* outImage, float* inImage,
 
    // Storage for intermediate arrays
    float* s1 = NULL;
-   result = Clarity_Real_Malloc((void**) &s1, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**)&s1, sizeof(float), 
+      nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr);
       return result;
    }
    float* s2 = NULL;
-   result = Clarity_Real_Malloc((void**)&s2, sizeof(float), nx, ny, nz);
+   result = Clarity_Real_Malloc((void**)&s2, sizeof(float), 
+      nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
       Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr); 
       Clarity_Free(s1);
@@ -155,35 +154,22 @@ Clarity_BlindMaximumLikelihoodDeconvolveGPU(float* outImage, float* inImage,
 
    // Iterate
    for (unsigned k = 0; k < iterations; k++) {
-      float* currentGuess = (k == 0 ? inImage : iPtr);
-      float* newGuess     = (k == iterations-1 ? outImage : iPtr);
+      float* currentGuess = (k == 0 ? in : iPtr);
+      float* newGuess     = currentGuess;
 
-      result = Clarity_MaximumLikelihoodUpdateGPU(nx, ny, nz, inImage, 
-         currentGuess, psfFT, s1, s2, newGuess);
+      result = Clarity_MaximumLikelihoodUpdateGPU(nx, ny, nz, 
+         in, currentGuess, psfFT, s1, s2, newGuess);
       if (result != CLARITY_SUCCESS) {
-         Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr); 
+         Clarity_Free(psfFT); Clarity_Free(in); 
+         Clarity_Free(iPtr); 
          Clarity_Free(s1); Clarity_Free(s2);
          return result;
       }
-
-      //// 1. Convolve current guess with h
-      //result = Clarity_Convolve_OTF(nx, ny, nz, currentGuess, psfFT, oPtr);
-      //if (result != CLARITY_SUCCESS) break;
-
-      //// 2. Point-wise divide with current guess (i/guess)
-      //MaximumLikelihoodDivideKernelGPU(nx, ny, nz, midPtr, in, oPtr);
-
-      //// 3. Convolve result with h
-      //result = Clarity_Convolve_OTF(nx, ny, nz, midPtr, psfFT, oPtr);
-      //if (result != CLARITY_SUCCESS) break;
-
-      //// 4. Point-wise multiply by current guess.
-      //float kappa = 1.0f;
-      //MaximumLikelihoodMultiplyKernelGPU(nx, ny, nz, iPtr, kappa, currentGuess, oPtr);
    }
 
    // Copy result from device.
-   result = Clarity_CopyFromDevice(nx, ny, nz, sizeof(float), outImage, iPtr);
+   result = Clarity_CopyFromDevice(nx, ny, nz, sizeof(float), 
+      outImage, iPtr);
 
    Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr);
    Clarity_Free(s1);    Clarity_Free(s2);
@@ -195,8 +181,10 @@ Clarity_BlindMaximumLikelihoodDeconvolveGPU(float* outImage, float* inImage,
 
 
 ClarityResult_t 
-Clarity_BlindMaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfImage, 
-                                         int nx, int ny, int nz, unsigned iterations) {
+Clarity_BlindMaximumLikelihoodDeconvolve(
+   float* outImage, float* inImage, float* psfImage, 
+   int nx, int ny, int nz, unsigned iterations) {
+
    int numVoxels = nx*ny*nz;
    ClarityResult_t result = CLARITY_SUCCESS;
 
@@ -205,14 +193,14 @@ Clarity_BlindMaximumLikelihoodDeconvolve(float* outImage, float* inImage, float*
 #endif
 
 #ifdef BUILD_WITH_CUDA
-   if (gCUDACapable) {
-      result = Clarity_BlindMaximumLikelihoodDeconvolveGPU(outImage, inImage, psfImage, 
-                                                           nx, ny, nz, iterations);
+   if (g_CUDACapable) {
+      result = Clarity_BlindMaximumLikelihoodDeconvolveGPU(
+         outImage, inImage, psfImage, nx, ny, nz, iterations);
    } else
 #endif // BUILD_WITH_CUDA
    {
-      result = Clarity_BlindMaximumLikelihoodDeconvolveCPU(outImage, inImage, psfImage, 
-                                                           nx, ny, nz, iterations);
+      result = Clarity_BlindMaximumLikelihoodDeconvolveCPU(
+         outImage, inImage, psfImage, nx, ny, nz, iterations);
    }
 
 #ifdef TIME

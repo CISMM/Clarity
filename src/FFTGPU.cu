@@ -12,7 +12,7 @@ __global__ void ModulateCUDAKernel(int n, float scale, Complex* inFT, Complex* p
    const int threadN = __mul24(blockDim.x, gridDim.x);
 
    for (int voxelID = tid; voxelID < n; voxelID += threadN) {
-      outFT[voxelID] = complexMulAndScale(inFT[voxelID], psfFT[voxelID], scale);
+      outFT[voxelID] = ComplexMultiplyAndScale(inFT[voxelID], psfFT[voxelID], scale);
    }
 
 }

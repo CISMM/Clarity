@@ -1,5 +1,21 @@
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
+   * BlindMaximumLikelihoodDeconvolve.cxx, Clarity.cxx,
+   IDivergenceDeconvolve.cxx, ImageClip.cxx, ImagePadSpatialShift.cxx,
+   JansenVanCittertDeconvolve.cxx, JansenVanCittertDeconvolveGPU.cu,
+   MaximumLikelihoodDeconvolve.cxx, SmoothedJansenVanCittertDeconvolve.cxx,
+   WienerDeconvolve.cxx, WienerDeconvolveGPU.cu: Cleaned up the formatting.
+   
+   * Convolve.cxx: Moved convolution-related routines here from FFT.cxx.
+   
+   * FFT.cxx: Removed convolution-related routines.
+   
+   * FFTGPU.cu: Fixed up names of function calls.
+   
+   * Memory.cxx: New file for memory-related routines.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
 	* BlindMaximumLikelihoodDeconvolve.cxx, .h: New files containing function
 	for blind deconvolution.
 	

@@ -6,9 +6,9 @@
 // shifting is a low-frequency operation.
 // Assumes adequate CPU side memory has been allocated in dst.
 ClarityResult_t
-Clarity_ImagePadSpatialShift(float *dst, int dstDim[3],
-                             float *src, int srcDim[3],
-                             int shift[3], float fillValue) {
+Clarity_ImagePadSpatialShift(
+   float *dst, int dstDim[3], float *src, int srcDim[3],
+   int shift[3], float fillValue) {
 
    if (dst == NULL || src == NULL) {
       return CLARITY_INVALID_ARGUMENT;
