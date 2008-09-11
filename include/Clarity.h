@@ -99,8 +99,7 @@ Clarity_SetNumberOfThreads(unsigned n);
  *                  corresponding to a shifted pixel get set.
  */
 C_FUNC_DEF ClarityResult_t
-Clarity_ImagePadSpatialShift(float *dst, int dstDim[3],
-                             float *src, int srcDim[3],
+Clarity_ImagePadSpatialShift(float *dst, int dstDim[3], float *src, int srcDim[3],
                              int shift[3], float fillValue);
 
 /**
@@ -119,8 +118,7 @@ Clarity_ImagePadSpatialShift(float *dst, int dstDim[3],
                  source buffer.
  */
 C_FUNC_DEF ClarityResult_t
-Clarity_ImageClip(float *dst, int dstDim[3],
-                  float *src, int srcDim[3]);
+Clarity_ImageClip(float *dst, int dstDim[3], float *src, int srcDim[3]);
 
 
 /***********************************/
@@ -187,8 +185,8 @@ Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfIm
  */
 C_FUNC_DEF ClarityResult_t 
 Clarity_SmoothedJansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage,
-                                          int nx, int ny, int nz, unsigned iterations,
-                                          unsigned smoothInterval, float smoothSigma[3]);
+                                           int nx, int ny, int nz, unsigned iterations,
+                                           unsigned smoothInterval, float smoothSigma[3]);
 
 
 /**
@@ -230,6 +228,25 @@ Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, float* psfImage,
 C_FUNC_DEF ClarityResult_t
 Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfImage,
 									int nx, int ny, int nz, unsigned iterations);
+
+/**
+ * Blind maximum-likelihood deconvolution method from the paper:
+ * J.B. Sibarita, Deconvolution microscopy, Adv. Biochem. Engin./Biotechnology (2005) 95: 201-243.
+ *
+ * @param outImage   Caller-allocated buffer holding result of Wiener filter.
+ *                   Dimensions of this buffer are nx*ny*nz.
+ * @param inImage    Image to be deconvolved. Dimensions of this buffer are
+ *                   nx*ny*nz.
+ * @param psfImage   Image of the point-spread function of the system that produced
+ *                   the image in the outImage parameter.
+ * @param nx         Size in x-dimension of outImage, inImage, and psfImage.
+ * @param ny         Size in y-dimension of outImage, inImage, and psfImage.
+ * @param nz         Size in z-dimension of outImage, inImage, and psfImage.
+ * @param iterations Number of algorithm iterations to run.
+ */
+C_FUNC_DEF ClarityResult_t
+Clarity_BlindMaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfImage,
+                                         int nx, int ny, int nz, unsigned iterations);
 
 
 /*************************/

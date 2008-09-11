@@ -1,3 +1,11 @@
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.h: Added function Clarity_BlindMaximumLikelihoodDeconvolve.
+	
+	* MaximumLikelihoodDeconvolve.h: Added function prototypes for
+	the update step in max likelihood deconvolution. Two prototypes here,
+	one for CPU and one for GPU.
+
 2008-09-08  Cory Quammen <cquammen@cs.unc.edu>
 
 	* Clarity.h: Added documentation for each publicly-accessible function
