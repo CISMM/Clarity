@@ -30,27 +30,29 @@ SET( Clarity_VERSION "${Clarity_MAJOR_VERSION}.${Clarity_MINOR_VERSION}.${Clarit
 INCLUDE_DIRECTORIES(${Clarity_BINARY_DIR})
 INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR} 
   ${Clarity_SOURCE_DIR}/include
+  ${Clarity_SOURCE_DIR}/include/internal
   ${CUDA_INCLUDE}
   )
 
 
 SET( Clarity_SRCS
+  src/BlindMaximumLikelihoodDeconvolve.cxx
   src/Clarity.cxx
+  src/Convolve.cxx
   src/FFT.cxx
   src/FFTGPU.cu
+  src/IDivergenceDeconvolve.cxx
+  src/ImageClip.cxx
+  src/ImagePadSpatialShift.cxx
+  src/JansenVanCittertDeconvolve.cxx
+  src/JansenVanCittertDeconvolveGPU.cu
+  src/Memory.cxx
+  src/MaximumLikelihoodDeconvolve.cxx
+  src/MaximumLikelihoodDeconvolveGPU.cu
+  src/SmoothedJansenVanCittertDeconvolve.cxx
   src/Stopwatch.cxx
   src/WienerDeconvolve.cxx
   src/WienerDeconvolveGPU.cu
-  src/JansenVanCittertDeconvolve.cxx
-  src/JansenVanCittertDeconvolveGPU.cu
-  src/SmoothedJansenVanCittertDeconvolve.cxx
-  src/IDivergenceDeconvolve.cxx
-  src/MaximumLikelihoodDeconvolve.cxx
-  src/MaximumLikelihoodDeconvolveGPU.cu
-  src/BlindMaximumLikelihoodDeconvolve.cxx
-  src/Convolve.cxx
-  src/ImageClip.cxx
-  src/ImagePadSpatialShift.cxx
   )
   
 CONFIGURE_FILE(
@@ -60,6 +62,7 @@ CONFIGURE_FILE(
 
 IF(BUILD_WITH_CUDA)
   CUDA_INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}/include)
+  CUDA_INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}/include/internal)
   CUDA_ADD_LIBRARY( Clarity ${Clarity_SRCS})
 ELSE(BUILD_WITH_CUDA)
   INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}/include)

@@ -12,7 +12,7 @@ Last update: 2007-09-28
 
 5). If you want to build with CUDA-acceleration, set BUILD_WITH_CUDA to "ON", and continue with these directions. Otherwise, skip to Step 8.
 
-6). Download and install CUDA Toolkit, Version 1.0 or later from http://developer.nvidia.com/object/cuda.html#downloads. By default, this installs the CUDA Toolkit in C:/CUDA, which is as good a place as any. If you are on a system with a CUDA-enabled graphics card, you should probably also install the latest NVIDIA display drivers.
+6). Download and install CUDA Toolkit, Version 1.1 or later from http://developer.nvidia.com/object/cuda.html#downloads. By default, this installs the CUDA Toolkit in C:/CUDA, which is as good a place as any. If you are on a system with a CUDA-enabled graphics card, you should probably also install the latest NVIDIA display drivers.
 
 7). Configure the CUDA settings, set CUDA_BUILD_TYPE to "Device". If CUDA_BUILD_TYPE does not say "C:/CUDA", select the path to your CUDA Toolkit installation path.
 
