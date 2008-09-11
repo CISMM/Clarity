@@ -16,6 +16,40 @@ static Stopwatch transferTimer("MaximumLikelihood filter (transfer time)");
 #endif
 
 
+ClarityResult_t
+Clarity_MaximumLikelihoodUpdateCPU(int nx, int ny, int nz, float* in,
+                                   float* currentGuess, float* otf, 
+                                   float* s1, float* s2, float* newGuess) {
+   ClarityResult_t result = CLARITY_SUCCESS;
+
+   // 1. Convolve current guess with h
+   result = Clarity_Convolve_OTF(nx, ny, nz, currentGuess, otf, s1);	  
+   if (result != CLARITY_SUCCESS) return result;
+
+   // 2. Point-wise divide with current guess (i/guess)
+   int numVoxels = nx*ny*nz;
+#pragma omp parallel for
+   for (int j = 0; j < numVoxels; j++) {
+      if (s1[j] < 1e-5f)
+         s1[j] = 0.0f;
+      else
+         s1[j] = in[j] / s1[j];
+   }
+
+   // 3. Convolve result with h
+   result = Clarity_Convolve_OTF(nx, ny, nz, s1, otf, s2);
+   if (result != CLARITY_SUCCESS) return result;
+
+   // 4. Point-wise multiply by current guess.
+   float kappa = 1.0f;
+#pragma omp parallel for
+   for (int j = 0; j < numVoxels; j++) {
+      newGuess[j] = kappa * currentGuess[j] * s2[j];
+   }
+
+   return result;
+}
+
 
 ClarityResult_t 
 Clarity_MaximumLikelihoodDeconvolveCPU(float* outImage, float* inImage, 
@@ -44,61 +78,39 @@ Clarity_MaximumLikelihoodDeconvolveCPU(float* outImage, float* inImage,
    }
 
    // Storage for intermediate array
-   float* midPtr = NULL;
-   result = Clarity_Real_Malloc((void**) &midPtr, sizeof(float), nx, ny, nz);
+   float* s1 = NULL;
+   result = Clarity_Real_Malloc((void**) &s1, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(midPtr); 
+      Clarity_Free(psfFT); Clarity_Free(iPtr); 
       return result;
    }
 
    // Storage for convolution of current guess with the PSF.
-   float* oPtr = NULL;
-   result = Clarity_Real_Malloc((void**) &oPtr, sizeof(float), nx, ny, nz);
+   float* s2 = NULL;
+   result = Clarity_Real_Malloc((void**) &s2, sizeof(float), nx, ny, nz);
    if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(midPtr); Clarity_Free(iPtr);
+      Clarity_Free(psfFT); Clarity_Free(iPtr); Clarity_Free(s1); 
       return result;
    }
 
    // Iterate
    int numVoxels = nx*ny*nz;	 
    for (unsigned k = 0; k < iterations; k++) {
-	   float* currentGuess = (k==0) ? inImage : iPtr;
+	   float* currentGuess = (k == 0 ? inImage : iPtr);
+      float* newGuess     = (k == iterations-1 ? outImage : iPtr);
 
-	   // 1. Convolve current guess with h (iPtr, or inImages)
-	   result = Clarity_Convolve_OTF(nx, ny, nz, currentGuess, psfFT, oPtr);	  
-      if (result != CLARITY_SUCCESS) break;
+      result = Clarity_MaximumLikelihoodUpdateCPU(nx, ny, nz, inImage, 
+         currentGuess, psfFT, s1, s2, newGuess);
+      if (result != CLARITY_SUCCESS) {
+         Clarity_Free(psfFT); Clarity_Free(iPtr); 
+         Clarity_Free(s1); Clarity_Free(s2);
+         return result;
+      }
 
-	   // 2. Point-wise divide with current guess (i/guess)
-#pragma omp parallel for
-	   for (int j = 0; j < numVoxels; j++) {
-		   if (oPtr[j] < .00001)
-			   midPtr[j] = 0.0f;
-		   else
-			   midPtr[j] = inImage[j] / oPtr[j];
-	   }
-
-	   // 3. Convolve result with h
-	   result = Clarity_Convolve_OTF(nx, ny, nz, midPtr, psfFT, oPtr);
-	   if (result != CLARITY_SUCCESS) break;
-
-	   // 4. Point-wise multiply by current guess.
-	   float kappa = 1.0f;
-	   if (k < iterations - 1) {
-
-#pragma omp parallel for
-		   for (int j = 0; j < numVoxels; j++) {
-		      iPtr[j] = kappa * currentGuess[j] * oPtr[j];
-         }
-	   } else {
-
-#pragma omp parallel for
-		   for (int j = 0; j < numVoxels; j++) {
-		      outImage[j] = kappa * currentGuess[j] * oPtr[j];
-         }
-	   }
    }
 
-   Clarity_Free(psfFT); Clarity_Free(midPtr); Clarity_Free(oPtr); Clarity_Free(iPtr);
+   Clarity_Free(psfFT); Clarity_Free(iPtr);
+   Clarity_Free(s1); Clarity_Free(s2);
 
    return result;
 }
@@ -110,10 +122,41 @@ void
 MaximumLikelihoodDivideKernelGPU(int nx, int ny, int nz,
                                  float* out, float *a, float *b);
 
+
 extern "C"
 void
 MaximumLikelihoodMultiplyKernelGPU(int nx, int ny, int nz, float *out, float kappa, 
                                    float *a, float *b);
+
+
+ClarityResult_t
+Clarity_MaximumLikelihoodUpdateGPU(int nx, int ny, int nz, float* in,
+                                   float* currentGuess, float* otf, 
+                                   float* s1, float* s2, float* newGuess) {
+   ClarityResult_t result = CLARITY_SUCCESS;
+
+   // 1. Convolve current guess with h
+   result = Clarity_Convolve_OTF(nx, ny, nz, currentGuess, otf, s1);
+   if (result != CLARITY_SUCCESS) {
+      return result;
+   }
+
+   // 2. Point-wise divide with current guess (i/guess)
+   MaximumLikelihoodDivideKernelGPU(nx, ny, nz, s1, in, s1);
+
+   // 3. Convolve result with h
+   result = Clarity_Convolve_OTF(nx, ny, nz, s1, otf, s2);
+   if (result != CLARITY_SUCCESS) {
+      return result;
+   }
+
+   // 4. Point-wise multiply by current guess.
+   float kappa = 1.0f;
+   MaximumLikelihoodMultiplyKernelGPU(nx, ny, nz, newGuess, kappa, 
+      currentGuess, s2);
+
+   return result;
+}
 
 
 ClarityResult_t 
