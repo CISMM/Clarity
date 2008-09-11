@@ -1,0 +1,32 @@
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Removed this file; should have been named
+   ChangeLog.txt (this file replaces it).
+   
+   * Complex.h, ComplexCUDA.h: Added comments for functions.
+
+   * Convolve.h: New file for convolution-related routines.
+   
+   * FFT.h: Removed a lot of non-FFT related function prototypes and put them
+   in more appropriate files (e.g. Convolve.h).
+   
+   * JansenVanCittertDeconvolveGPU.h: New file containing GPU device 
+   function prototype for this deconvolution method.
+   
+   * MaximumLikelihoodDeconvolve.h: Added comments to the prototype 
+   in this file.
+   
+   * MaximumLikelihoodDeconvolveGPU.h: Moved GPU-related function
+   prototypes here.
+   
+   * Memory.h: New file with memory allocation and data transfer-related
+   function prototypes.
+   
+   * WienerDeconvolveGPU.h: New file containing GPU device function
+   prototype for this deconvolution method.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * All files: Moved from one directory level up. These header files
+   are internal to the library and really shouldn't be exposed to
+   client applications or libraries.
