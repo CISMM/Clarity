@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <omp.h>
 
+#include "ComputePrimitives.h"
 #include "Convolve.h"
 #include "FFT.h"
+#include "MaximumLikelihoodDeconvolve.h"
 #include "Memory.h"
 
 extern bool g_CUDACapable;
@@ -19,9 +21,10 @@ static Stopwatch transferTimer("MaximumLikelihood filter (transfer time)");
 
 
 ClarityResult_t
-Clarity_MaximumLikelihoodUpdateCPU(
-   int nx, int ny, int nz, float* in, float* currentGuess, 
-   float* otf, float* s1, float* s2, float* newGuess) {
+Clarity_MaximumLikelihoodUpdate(
+   int nx, int ny, int nz, float* in, float energy,
+   float* currentGuess, float* otf, float* s1, float* s2, 
+   float* newGuess) {
 
    ClarityResult_t result = CLARITY_SUCCESS;
 
@@ -31,24 +34,23 @@ Clarity_MaximumLikelihoodUpdateCPU(
 
    // 2. Point-wise divide with current guess (i/guess)
    int numVoxels = nx*ny*nz;
-#pragma omp parallel for
-   for (int j = 0; j < numVoxels; j++) {
-      if (s1[j] < 1e-5f)
-         s1[j] = 0.0f;
-      else
-         s1[j] = in[j] / s1[j];
-   }
+   Clarity_DivideArraysComponentWise(s1, in, s1, 0.0f, numVoxels);
 
    // 3. Convolve result with h
    result = Clarity_Convolve_OTF(nx, ny, nz, s1, otf, s2);
    if (result != CLARITY_SUCCESS) return result;
 
    // 4. Point-wise multiply by current guess.
-   float kappa = 1.0f;
-#pragma omp parallel for
-   for (int j = 0; j < numVoxels; j++) {
-      newGuess[j] = kappa * currentGuess[j] * s2[j];
-   }
+   Clarity_MultiplyArraysComponentWise(newGuess, currentGuess, 
+      s2, numVoxels);
+
+   // 5. Compute energy preservation scaling factor.
+   float newEnergy = 0.0f;
+   Clarity_ReduceSum(&newEnergy, newGuess, nx*ny*nz);
+
+   // 6. Rescale to normalize energy.
+   float scale = energy / newEnergy;
+   Clarity_ScaleArray(newGuess, newGuess, numVoxels, scale);
 
    return result;
 }
@@ -101,14 +103,18 @@ Clarity_MaximumLikelihoodDeconvolveCPU(
       return result;
    }
 
+   // Compute original energy in the image
+   float energy;
+   Clarity_ReduceSum(&energy, inImage, nx*ny*nz);
+
    // Iterate
    int numVoxels = nx*ny*nz;	 
    for (unsigned k = 0; k < iterations; k++) {
 	   float* currentGuess = (k == 0 ? inImage : iPtr);
       float* newGuess     = (k == iterations-1 ? outImage : iPtr);
 
-      result = Clarity_MaximumLikelihoodUpdateCPU(nx, ny, nz, 
-         inImage, currentGuess, psfFT, s1, s2, newGuess);
+      result = Clarity_MaximumLikelihoodUpdate(nx, ny, nz, 
+         inImage, energy, currentGuess, psfFT, s1, s2, newGuess);
       if (result != CLARITY_SUCCESS) {
          Clarity_Free(psfFT); Clarity_Free(iPtr); 
          Clarity_Free(s1); Clarity_Free(s2);
@@ -125,37 +131,6 @@ Clarity_MaximumLikelihoodDeconvolveCPU(
 #ifdef BUILD_WITH_CUDA
 
 #include "MaximumLikelihoodDeconvolveGPU.h"
-
-
-ClarityResult_t
-Clarity_MaximumLikelihoodUpdateGPU(
-   int nx, int ny, int nz, float* in, float* currentGuess, 
-   float* otf, float* s1, float* s2, float* newGuess) {
-
-   ClarityResult_t result = CLARITY_SUCCESS;
-
-   // 1. Convolve current guess with h
-   result = Clarity_Convolve_OTF(nx, ny, nz, currentGuess, otf, s1);
-   if (result != CLARITY_SUCCESS) {
-      return result;
-   }
-
-   // 2. Point-wise divide with current guess (i/guess)
-   MaximumLikelihoodDivideKernelGPU(nx, ny, nz, s1, in, s1);
-
-   // 3. Convolve result with h
-   result = Clarity_Convolve_OTF(nx, ny, nz, s1, otf, s2);
-   if (result != CLARITY_SUCCESS) {
-      return result;
-   }
-
-   // 4. Point-wise multiply by current guess.
-   float kappa = 1.0f;
-   MaximumLikelihoodMultiplyKernelGPU(nx, ny, nz, newGuess, 
-      kappa, currentGuess, s2);
-
-   return result;
-}
 
 
 ClarityResult_t 
@@ -221,13 +196,17 @@ Clarity_MaximumLikelihoodDeconvolveGPU(
       return result;
    }
 
+   // Compute original energy in the image
+   float energy;
+   Clarity_ReduceSum(&energy, in, nx*ny*nz);
+
    // Iterate
    for (unsigned k = 0; k < iterations; k++) {
       float* currentGuess = (k == 0 ? in : iPtr);
       float* newGuess     = iPtr;
 
-      result = Clarity_MaximumLikelihoodUpdateGPU(nx, ny, nz, 
-         in, currentGuess, psfFT, s1, s2, newGuess);
+      result = Clarity_MaximumLikelihoodUpdate(nx, ny, nz, 
+         in, energy, currentGuess, psfFT, s1, s2, newGuess);
       if (result != CLARITY_SUCCESS) {
          Clarity_Free(psfFT); Clarity_Free(in); 
          Clarity_Free(iPtr); 

@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <omp.h>
 
+#include "ComputePrimitives.h"
 #include "MaximumLikelihoodDeconvolve.h"
 #include "FFT.h"
 #include "Memory.h"
@@ -65,13 +66,18 @@ Clarity_BlindMaximumLikelihoodDeconvolveCPU(
       return result;
    }
 
+   // Compute original energy in the image
+   float energy;
+   Clarity_ReduceSum(&energy, inImage, nx*ny*nz);
+
    // Iterate
    for (unsigned k = 0; k < iterations; k++) {
       float* currentGuess = (k == 0 ? inImage : iPtr);
       float* newGuess     = (k == iterations-1 ? outImage : iPtr);
 
-      result = Clarity_MaximumLikelihoodUpdateCPU(nx, ny, nz, 
-         inImage, currentGuess, psfFT, s1, s2, newGuess);
+      // Update the image.
+      result = Clarity_MaximumLikelihoodUpdate(nx, ny, nz, 
+         inImage, energy, currentGuess, psfFT, s1, s2, newGuess);
       if (result != CLARITY_SUCCESS) {
          Clarity_Free(psfFT); Clarity_Free(iPtr); 
          Clarity_Free(s1); Clarity_Free(s2);
@@ -152,13 +158,17 @@ Clarity_BlindMaximumLikelihoodDeconvolveGPU(
       return result;
    }
 
+   // Compute original energy in the image
+   float energy;
+   Clarity_ReduceSum(&energy, in, nx*ny*nz);
+
    // Iterate
    for (unsigned k = 0; k < iterations; k++) {
       float* currentGuess = (k == 0 ? in : iPtr);
       float* newGuess     = iPtr;
 
-      result = Clarity_MaximumLikelihoodUpdateGPU(nx, ny, nz, 
-         in, currentGuess, psfFT, s1, s2, newGuess);
+      result = Clarity_MaximumLikelihoodUpdate(nx, ny, nz, 
+         in, energy, currentGuess, psfFT, s1, s2, newGuess);
       if (result != CLARITY_SUCCESS) {
          Clarity_Free(psfFT); Clarity_Free(in); 
          Clarity_Free(iPtr); 

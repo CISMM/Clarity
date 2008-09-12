@@ -1,5 +1,26 @@
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
+   * BlindMaximumLikelihoodDeconvolve.cxx: Now applies scale factor for
+   conserving image energy after each iteration.
+   
+   * BlindMaximumLikelihoodDeconvolveGPU.cu: Removed because all necessary
+   functions are now defined as data parallel compute primitives.
+   
+   * ComputePrimitives.cxx: Collection of data parallel primitive routines
+   useful in deconvolution routines.
+   
+   * ComputePrimitivesGPU.cu: GPU version of the above.
+   
+   * MaximumLikelihoodDeconvolve.cxx: Consolidated separate routines
+   on CPU and GPU for the iteration update into a single routine making
+   use of parallel primitives. Now applies scale factor for
+   conserving image energy after each iteration.
+   
+   * MaximumLikelihoodDeconvolveGPU.cu: Removed because all necessary
+   functions are now defined as data parallel compute primitives.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
    * MaximumLikelihoodDeconvolve.cxx, BlindMaximumLikelihoodDeconvolve.cxx:
    Fixed a bug where I was overwriting the original image data, which is
    needed throughout the algorithm.
