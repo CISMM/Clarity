@@ -5,7 +5,7 @@
 
 
 /**
- * Update step of the maximum likelihood algorithm on the CPU.
+ * Update step of the maximum likelihood algorithm.
  * 
  * @param nx           X-dimension of in, currentGuess, otf, newGuess.
  * @param ny           Y-dimension of in, currentGuess, otf, newGuess.
@@ -20,9 +20,10 @@
  *                     the next best guess of the uncorrupted image.
  */
 ClarityResult_t
-Clarity_MaximumLikelihoodUpdateCPU(
-   int nx, int ny, int nz, float* in, float* currentGuess, 
-   float* otf, float* s1, float* s2, float* newGuess);
+Clarity_MaximumLikelihoodUpdate(
+   int nx, int ny, int nz, float* in, float energy,
+   float* currentGuess, float* otf, float* s1, float* s2,
+   float* newGuess);
 
 
 #endif // __MAXIMUM_LIKELIHOOD_DECONVOLVE_H_

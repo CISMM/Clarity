@@ -1,5 +1,15 @@
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
+   * ComputePrimitives.h: New file with prototypes for a variety of
+   parallel computing primitives.
+   
+   * ComputePrimitivesGPU.h: CUDA versions of prototypes in
+   ComputePrimitives.h.
+   
+   * MaximumLikelihoodDeconvolve.h: Formatting changes.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
    * CMakeLists.txt: Removed this file; should have been named
    ChangeLog.txt (this file replaces it).
    
