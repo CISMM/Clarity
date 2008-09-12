@@ -38,6 +38,8 @@ INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}
 SET( Clarity_SRCS
   src/BlindMaximumLikelihoodDeconvolve.cxx
   src/Clarity.cxx
+  src/ComputePrimitives.cxx
+  src/ComputePrimitivesGPU.cu
   src/Convolve.cxx
   src/FFT.cxx
   src/FFTGPU.cu
@@ -48,7 +50,6 @@ SET( Clarity_SRCS
   src/JansenVanCittertDeconvolveGPU.cu
   src/Memory.cxx
   src/MaximumLikelihoodDeconvolve.cxx
-  src/MaximumLikelihoodDeconvolveGPU.cu
   src/SmoothedJansenVanCittertDeconvolve.cxx
   src/Stopwatch.cxx
   src/WienerDeconvolve.cxx

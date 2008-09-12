@@ -1,5 +1,10 @@
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
+   * CMakeLists.txt: Added source files ComputePrimitives.cxx and
+   ComputePrimitivesGPU.cu, removed MaximumLikelihoodDeconvolveGPU.cu.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
    * CMakeLists.txt: Added include/internal directory to set of
    include directories.
    
