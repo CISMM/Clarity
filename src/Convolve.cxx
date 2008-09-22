@@ -27,6 +27,7 @@ Clarity_Convolve(
    ClarityResult_t result = CLARITY_SUCCESS;
 
    // Copy over the input image and PSF.
+#ifdef BUILD_WITH_CUDA
    if (g_CUDACapable) {
       float* in;
       float* psf;
@@ -47,7 +48,9 @@ Clarity_Convolve(
          outImage, in);
       Clarity_Free(in); Clarity_Free(psf);
 
-   } else {
+   } else 
+#endif // BUILD_WITH_CUDA
+   {
 
       Clarity_ConvolveInternal(nx, ny, nz, inImage, kernel, 
          outImage);
