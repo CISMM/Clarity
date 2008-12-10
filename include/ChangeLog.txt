@@ -1,3 +1,8 @@
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Created Dim3 type for specifying image dimensions. Chagned
+   function prototypes to use this type for image dimension specifications.
+
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
    * Moved all "private" library headers from this level down to new
