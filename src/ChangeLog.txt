@@ -1,7 +1,12 @@
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+  * Clarity.cxx, ImageClip.cxx, Memory.cxx: Added newline at end of these
+    files to make gcc happy.
+
 2008-09-21  Cory Quammen <cquammen@cs.unc.edu>
 
-	* Convolve.cxx: Added ifdefs checking for BUILD_WITH_CUDA. Fixes linker
-	error when building without CUDA.
+   * Convolve.cxx: Added ifdefs checking for BUILD_WITH_CUDA. Fixes linker
+   error when building without CUDA.
 
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
