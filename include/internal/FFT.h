@@ -13,6 +13,7 @@
  * @param in  Input real image.
  * @param out Output complex image without redundant coefficients.
  */
+C_FUNC_DEF
 ClarityResult_t
 Clarity_FFT_R2C_float(
    int nx, int ny, int nz, float* in, float* out);
@@ -27,6 +28,7 @@ Clarity_FFT_R2C_float(
  * @param in  Input complex image without redundant coefficients.
  * @param out Output real image.
  */
+C_FUNC_DEF
 ClarityResult_t
 Clarity_FFT_C2R_float(
    int nx, int ny, int nz, float* in, float* out);

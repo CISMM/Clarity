@@ -1,5 +1,9 @@
 2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
 
+   * FFT.h: Added C linkage declaration in front of functions in this file.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
    * Memory.h: Added include for cstring so that size_t is defined.
 
 2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
