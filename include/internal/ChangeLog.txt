@@ -1,3 +1,12 @@
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Complex.h, ComputePrimitives.h, Convolve.h, 
+   JansenVanCittertDeconvolve.h, MaximumLikelihoodDeconvolve.h,
+   MaximumLikelihoodDeconvolveGPU.h, WienerDeconvolveGPU.h:
+   Added newlines at the end of these files to keep gcc from complaining.
+
+   * Memory.h: Added include for cstring so that size_t is defined.
+
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
    * ComputePrimitives.h: New file with prototypes for a variety of
