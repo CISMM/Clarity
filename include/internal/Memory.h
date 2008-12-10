@@ -1,6 +1,8 @@
 #ifndef __MEMORY_H_
 #define __MEMORY_H_
 
+#include <cstring>
+
 /**
  * Allocates a 3D complex-valued image of given size.
  * 
