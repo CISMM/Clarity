@@ -1,5 +1,11 @@
 2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
 
+   * CMakeLists.txt: Added FOUND_CUFFT to link libraries when compiling
+     with CUDA support. This basically points it to the cufft.lib file
+     in the CUDA installation.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
    * CMakeLists.txt: Removed linked library cufft.lib. New version
    of FindCUDA.cmake takes care of this.
 
