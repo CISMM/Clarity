@@ -7,7 +7,6 @@ OPTION(BUILD_WITH_CUDA "Build with CUDA FFT acceleration." OFF)
 IF(BUILD_WITH_CUDA)
   # Load CUDA macros
   INCLUDE(${CMAKE_SOURCE_DIR}/CMake/cuda/FindCuda.cmake)
-  LINK_LIBRARIES(cufft.lib)
 ENDIF(BUILD_WITH_CUDA)
 
 FIND_LIBRARY(FFTW3_LIBRARY Clarity C:/NSRG)

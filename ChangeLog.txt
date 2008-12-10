@@ -1,3 +1,8 @@
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Removed linked library cufft.lib. New version
+   of FindCUDA.cmake takes care of this.
+
 2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Added source files ComputePrimitives.cxx and
