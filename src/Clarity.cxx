@@ -51,11 +51,21 @@ Clarity_UnRegister() {
 }
 
 
-C_FUNC_DEF ClarityResult_t
+ClarityResult_t
 Clarity_SetNumberOfThreads(unsigned n) {
    omp_set_num_threads(n);
    int np = omp_get_num_procs();
    fftwf_plan_with_nthreads(np);
 
    return CLARITY_SUCCESS;
+}
+
+
+Clarity_Dim3
+Clarity_Dim3FromArray(int dimArray[3]) {
+   Clarity_Dim3 dim;
+   dim.x = dimArray[0];
+   dim.y = dimArray[1];
+   dim.z = dimArray[2];
+   return dim;
 }

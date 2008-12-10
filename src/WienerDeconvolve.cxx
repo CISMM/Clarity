@@ -177,7 +177,9 @@ Clarity_WienerDeconvolve(
 ClarityResult_t 
 Clarity_WienerDeconvolve(
    float* outImage, float* inImage, float* psfImage, 
-   int nx, int ny, int nz, float epsilon) {
+   Clarity_Dim3 dim, float epsilon) {
+
+   int nx = dim.x, ny = dim.y, nz = dim.z;
 
 #ifdef TIME
    totalTimer.Start();

@@ -17,8 +17,10 @@ static Stopwatch transferTimer("JansenVanCittert filter (transfer time)");
 
 ClarityResult_t
 Clarity_Convolve(
-   int nx, int ny, int nz, float* inImage, float* kernel,
+   Clarity_Dim3 dim, float* inImage, float* kernel,
    float* outImage) {
+
+   int nx = dim.x;   int ny = dim.y;   int nz = dim.z;
 
 #ifdef TIME
    totalTimer.Start();

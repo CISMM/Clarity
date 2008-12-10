@@ -234,12 +234,12 @@ Clarity_JansenVanCittertDeconvolveGPU(
 ClarityResult_t 
 Clarity_JansenVanCittertDeconvolve(
    float* outImage, float* inImage, float* psfImage, 
-   int nx, int ny, int nz, unsigned iterations) {
+   Clarity_Dim3 dim, unsigned iterations) {
 
    ClarityResult_t result;
 
    // Find maximum value in the input image.
-   float max = Clarity_GetImageMax(inImage, nx*ny*nz);
+   float max = Clarity_GetImageMax(inImage, dim.x*dim.y*dim.z);
 
 #ifdef TIME
    // We'll start timing here to exclude the on-CPU maximum calculation
@@ -249,12 +249,12 @@ Clarity_JansenVanCittertDeconvolve(
 #ifdef BUILD_WITH_CUDA
    if (g_CUDACapable) {
       result = Clarity_JansenVanCittertDeconvolveGPU(outImage, 
-         inImage, psfImage, nx, ny, nz, max, iterations);
+         inImage, psfImage, dim.x, dim.y, dim.z, max, iterations);
    } else
 #endif // BUILD_WITH_CUDA
    {
       result = Clarity_JansenVanCittertDeconvolveCPU(outImage, 
-         inImage, psfImage, nx, ny, nz, max, iterations);
+         inImage, psfImage, dim.x, dim.y, dim.z, max, iterations);
    }
 
 #ifdef TIME

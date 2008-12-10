@@ -4,18 +4,18 @@
 // shifting is a low-frequency operation.
 // Assumes adequate CPU side memory has been allocated in dst.
 ClarityResult_t
-Clarity_ImageClip(
-   float *dst, int dstDim[3], float *src, int srcDim[3]) {
+Clarity_ImageClip(float *dst, Clarity_Dim3 dstDim, 
+                  float *src, Clarity_Dim3 srcDim) {
    
    if (dst == NULL || src == NULL) {
       return CLARITY_INVALID_ARGUMENT;
    }
 
-   for (int dk = 0; dk < dstDim[2]; dk++) {
-      for (int dj = 0; dj < dstDim[1]; dj++) {
-         for (int di = 0; di < dstDim[0]; di++) {
-            int dIndex = (dk*dstDim[1]*dstDim[0]) + (dj*dstDim[0]) + di;
-            int sIndex = (dk*srcDim[1]*srcDim[1]) + (dj*srcDim[0]) + di;
+   for (int dk = 0; dk < dstDim.z; dk++) {
+      for (int dj = 0; dj < dstDim.y; dj++) {
+         for (int di = 0; di < dstDim.x; di++) {
+            int dIndex = (dk*dstDim.y*dstDim.x) + (dj*dstDim.x) + di;
+            int sIndex = (dk*srcDim.y*srcDim.y) + (dj*srcDim.x) + di;
             dst[dIndex] = src[sIndex];
          }
       }

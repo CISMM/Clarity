@@ -1,5 +1,14 @@
 2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
 
+   * Clarity.cxx: Added Clarity_Dim3FromArray helper function.
+   
+   * Convolve.cxx, IDivergenceDeconvolve.cxx, ImageClip.cxx,
+   ImagePadSpatialShift.cxx, JansenVanCittertDeconvolve.cxx,
+   MaximumLikelihoodDeconvolve.cxx, SmoothedJansenVanCittertDeconvolve.cxx,
+   WienerDeconvolve.cxx: Switched to Clarity_Dim3 type.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
   * Clarity.cxx, ImageClip.cxx, Memory.cxx: Added newline at end of these
     files to make gcc happy.
 

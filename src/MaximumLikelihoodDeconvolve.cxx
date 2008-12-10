@@ -231,9 +231,9 @@ Clarity_MaximumLikelihoodDeconvolveGPU(
 ClarityResult_t 
 Clarity_MaximumLikelihoodDeconvolve(
    float* outImage, float* inImage, float* psfImage, 
-   int nx, int ny, int nz, unsigned iterations) {
+   Clarity_Dim3 dim, unsigned iterations) {
 
-   int numVoxels = nx*ny*nz;
+   int numVoxels = dim.x*dim.y*dim.z;
    ClarityResult_t result = CLARITY_SUCCESS;
 
 #ifdef TIME
@@ -243,12 +243,12 @@ Clarity_MaximumLikelihoodDeconvolve(
 #ifdef BUILD_WITH_CUDA
    if (g_CUDACapable) {
       result = Clarity_MaximumLikelihoodDeconvolveGPU(
-         outImage, inImage, psfImage, nx, ny, nz, iterations);
+         outImage, inImage, psfImage, dim.x, dim.y, dim.z, iterations);
    } else
 #endif // BUILD_WITH_CUDA
    {
       result = Clarity_MaximumLikelihoodDeconvolveCPU(
-         outImage, inImage, psfImage, nx, ny, nz, iterations);
+         outImage, inImage, psfImage, dim.x, dim.y, dim.z, iterations);
    }
 
 #ifdef TIME

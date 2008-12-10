@@ -3,11 +3,11 @@
 ClarityResult_t
 Clarity_SmoothedJansenVanCittertDeconvolve(
    float* outImage, float* inImage, float* psfImage,
-   int nx, int ny, int nz, unsigned iterations, 
+   Clarity_Dim3 dim, unsigned iterations, 
    unsigned smoothInterval, float smoothSigma[3]) {
 
-   // Temporary code to produce something for checking whether VTK hookup works.
-   int size = nx * ny * nz;
+   // Temporary code to produce something.
+   int size = dim.x * dim.y * dim.z;
    for (int i = 0; i < size; i++) {
       outImage[i] = 0.0f;
    }
