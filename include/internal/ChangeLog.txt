@@ -1,3 +1,16 @@
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitivesGPU.h: Added documentation for a parameter in function
+   Clarity_DivideArraysComponentWiseGPU.
+
+   * Convolve.h: Removed Clarity_Convolve function prototype because it is
+   in Clarity.h.
+
+   * JansenVanCittertDeconvolveGPU.h: Fixed documentation of function.
+
+   * MaximumLikelihoodDeconvolve.h: Added parameter documentation for a
+   function.
+
 2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
 
    * FFT.h: Added C linkage declaration in front of functions in this file.

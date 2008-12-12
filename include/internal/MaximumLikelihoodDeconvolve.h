@@ -11,6 +11,7 @@
  * @param ny           Y-dimension of in, currentGuess, otf, newGuess.
  * @param nz           Z-dimension of in, currentGuess, otf, newGuess.
  * @param in           Original real-valued image.
+ * @param energy       Original energy of the image 'in'.
  * @param currentGuess Current guess of the uncorrupted image.
  * @param otf          Fourier transform of the convolution kernel.
  * @param s1           Temporary storage buffer big enough to store

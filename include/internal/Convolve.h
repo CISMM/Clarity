@@ -1,22 +1,6 @@
 #ifndef __CONVOLVE_H_
 #define __CONVOLVE_H_
 
-/**
- * Convolves two images of equal dimensions.
- * 
- * @param nx       X-dimension of inImage, kernel, and outImage.
- * @param ny       Y-dimension of inImage, kernel, and outImage.
- * @param nz       Z-dimension of inImage, kernel, and outImage.
- * @param inImage  Real image to convolve.
- * @param kernel   Convolution kernel.
- * @param outImage Resulting real image.
- */
-ClarityResult_t
-Clarity_Convolve(
-   int nx, int ny, int nz, float* inImage, 
-   float* kernel, float* outImage);
-
-
 /** 
  * Convolution function with pre-Fourier-transformed kernel,
  * sometimes called the optical transfer function (OTF). 

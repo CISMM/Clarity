@@ -20,7 +20,6 @@ Clarity_ReduceSumGPU(float* result, float* buffer, int n);
  * @param result The multiplied array.
  * @param a      First input array.
  * @param b      Second input array.
- * @param value  Value for result if denominator is zero.
  * @param n      Length of arrays.
  */
 extern "C"
