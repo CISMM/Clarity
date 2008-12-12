@@ -1,8 +1,19 @@
-/* note: changes to this file must be propagated to clarity.h.in so that 
-   Clarity can be compiled using CMake and autoconf. */
-
 #ifndef __CLARITY_LIB_H_
 #define __CLARITY_LIB_H_
+
+/** \mainpage
+<p>
+Clarity is an open-source C/C++ library implementing many of the common deconvolution algorithms used in fluorescence microscopy. It is designed specifically for processing 3D images generated from optical sectioning.
+</p>
+
+<p>
+Because deconvolution is a computationally intensive process, Clarity uses multithreaded algorithms to make full use of all the cores on modern multi-core computer systems. For even greater performance, the deconvolution algorithms can optionally run on commodity graphics processing units that feature hundreds of computing cores. Support for acceleration on graphics processing units is currently limited to NVIDIA graphics cards.
+</p>
+
+<p>
+Please go to the Clarity Deconvolution Library <a href="http://cismm.cs.unc.edu/resources/software-manuals/clarity-deconvolution-library/">web page</a> for additional information and the latest updates.
+</p>
+*/
 
 #ifdef __cplusplus
 # if defined(WIN32) && defined(CLARITY_SHARED_LIB)
@@ -61,7 +72,7 @@ typedef struct _Clarity_Dim3_t {
 /** Creates a Clarity_Dim from a three-element integer array
  *  representing dimensions in x, y, and z.
  *
- * @param The three-element array.
+ * @param dimArray The three-element array.
  * @return The Clarity_Dim object.
  */
 C_FUNC_DEF
@@ -153,104 +164,126 @@ Clarity_ImageClip(float *dst, Clarity_Dim3 dstDim, float *src, Clarity_Dim3 srcD
 /**
  * Applies a Wiener filter for deconvolution.
  *
+ * @param inImage     Image to be deconvolved. Dimensions of this buffer are 
+ *                    given by imageDim.
+ * @param imageDim    Dimensions of inImage.
+ * @param kernelImage Image of the blurring kernel of the system that produced
+ *                    the image in inImage.
+ * @param kernelDim   Dimensions of kernelImage.
  * @param outImage    Caller-allocated buffer holding result of Wiener filter.
- *                    Dimensions of this buffer are given by dim.
- * @param inImage     Image to be deconvolved. Dimensions of this buffer are given by dim.
- * @param psfImage    Image of the point-spread function of the system that produced
- *                    the image in the outImage parameter.
- * @param dim         Dimension of outImage, inImage, and psfImage.
- * @param epsilon     Constant standing in place of the ratio between power spectra of
- *                    noise and the power spectra of the underlying image, which are
- *                    unknown parameters. In practice, acts as a smoothing factor.
- *                    Typically set in the range 0.001 to 0.1.
+ *                    Dimensions of this buffer are given by imageDim.
+ * @param epsilon     Constant standing in place of the ratio between power 
+ *                    spectra of noise and the power spectra of the underlying
+ *                    image, which are unknown parameters. In practice, acts 
+ *                    as a smoothing factor. Typically set in the range 
+ *                    0.001 to 0.1.
  */
 C_FUNC_DEF
 ClarityResult_t 
-Clarity_WienerDeconvolve(float* outImage, float* inImage, float* psfImage,
-                         Clarity_Dim3 dim, float epsilon);
+Clarity_WienerDeconvolve(float* inImage, Clarity_Dim3 imageDim,
+			 float* kernelImage, Clarity_Dim3 kernelDim,
+			 float* outImage, float epsilon);
 
 
 /**
- * Class Jansen-van Cittert formulation for constrained iterative deconvolution.
+ * Classic Jansen-van Cittert formulation for constrained iterative 
+ * deconvolution.
  * 
- * @param outImage   Caller-allocated buffer holding result of Wiener filter.
- *                   Dimensions of this buffer are given by dim.
- * @param inImage    Image to be deconvolved. Dimensions of this buffer are
- *                   given by dim.
- * @param psfImage   Image of the point-spread function of the system that produced
- *                   the image in the outImage parameter.
- * @param dim        Dimension of outImage, inImage, and psfImage.
- * @param iterations Number of algorithm iterations to run.
+ * @param inImage     Image to be deconvolved. Dimensions of this buffer are 
+ *                    given by imageDim.
+ * @param imageDim    Dimensions of inImage.
+ * @param kernelImage Image of the blurring kernel of the system that produced
+ *                    the image in inImage.
+ * @param kernelDim   Dimensions of kernelImage.
+ * @param outImage    Caller-allocated buffer holding result of Wiener filter.
+ *                    Dimensions of this buffer are given by imageDim.
+ * @param iterations  Number of algorithm iterations to run.
  */
 C_FUNC_DEF
 ClarityResult_t 
-Clarity_JansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage,
-                                   Clarity_Dim3 dim, unsigned iterations);
-
+Clarity_JansenVanCittertDeconvolve(float* inImage, Clarity_Dim3 imageDim,
+				   float* kernelImage, Clarity_Dim3 kernelDim,
+				   float* outImage, int iterations);
 
 /**
- * WARNING: This function's implementation is temporary and produces undefined results.
+ * WARNING: This function's implementation is incomplete and produces undefined
+ *  results.
  *
- * Implementation of the Jansen-van Cittert formulation for constrained iterative
- * deconvolution that applies a smoothing step every few iterations to reduce noise
- * amplification.
+ * Implementation of the Jansen-van Cittert formulation for constrained
+ * iterative deconvolution that applies a smoothing step every few iterations 
+ * to reduce noise amplification.
  * 
- * @warning          Implementation incomplete.
- * @param outImage   Caller-allocated buffer holding result of this filter.
- *                   Dimensions of this buffer are given by dim.
- * @param inImage    Image to be deconvolved. Dimensions of this buffer are
- *                   given by dim.
- * @param psfImage   Image of the point-spread function of the system that produced
- *                   the image in the outImage parameter.
- * @param dim        Dimension of outImage, inImage, and psfImage.
- * @param iterations Number of algorithm iterations to run.
+ * @warning              Implementation incomplete.
+ * @param inImage        Image to be deconvolved. Dimensions of this buffer 
+ *                       are given by imageDim.
+ * @param imageDim       Dimensions of inImage.
+ * @param kernelImage    Image of the blurring kernel of the system that
+ *                       produced the image in inImage.
+ * @param kernelDim      Dimensions of kernelImage.
+ * @param outImage       Caller-allocated buffer holding result of Wiener
+ *                       filter. Dimensions of this buffer are given by
+ *                       imageDim.
+ * @param iterations     Number of algorithm iterations to run.
+ * @param smoothInterval Iteration interval between applications of smoothing.
+ * @param smoothSigma    Blurring Gaussian kernel parameters.
  */
 C_FUNC_DEF
 ClarityResult_t 
-Clarity_SmoothedJansenVanCittertDeconvolve(float* outImage, float* inImage, float* psfImage,
-                                           Clarity_Dim3 dim, unsigned iterations,
-                                           unsigned smoothInterval, float smoothSigma[3]);
+Clarity_SmoothedJansenVanCittertDeconvolve(
+  float* inImage, Clarity_Dim3 imageDim, 
+  float* kernelImage, Clarity_Dim3 kernelDim,
+  float* outImage, unsigned iterations, unsigned smoothInterval,
+  float* smoothSigma[3]);
 
 
 /**
- * WARNING: This function's implementation is temporary and produces undefined results.
+ * WARNING: This function's implementation is incomplete and produces 
+ * undefined results.
  *
  * Unimplemented, but promising, deconvolution method based on the paper:
- * J. Markham and J.A. Conchello, Fast maximum-likelihood image-restoration algorithms
- * for three-dimensional fluorescence microscopy, J. Opt. Soc. Am. A, Vol. 18, No. 5,
- * May 2001.
+ * J. Markham and J.A. Conchello, Fast maximum-likelihood image-restoration
+ * algorithms for three-dimensional fluorescence microscopy, J. Opt. Soc. Am. 
+ * A, Vol. 18, No. 5, May 2001.
  *
- * @param outImage   Caller-allocated buffer holding result of Wiener filter.
- *                   Dimensions of this buffer are given by dim.
- * @param inImage    Image to be deconvolved. Dimensions of this buffer are
- *                   given by dim.
- * @param psfImage   Image of the point-spread function of the system that produced
- *                   the image in the outImage parameter.
- * @param dim        Dimension of outImage, inImage, and psfImage.
+ * @warning           Implementation incomplete.
+ * @param inImage     Image to be deconvolved. Dimensions of this buffer 
+ *                    are given by imageDim.
+ * @param imageDim    Dimensions of inImage.
+ * @param kernelImage Image of the blurring kernel of the system that
+ *                    produced the image in inImage.
+ * @param kernelDim   Dimensions of kernelImage.
+ * @param outImage    Caller-allocated buffer holding result of Wiener
+ *                    filter. Dimensions of this buffer are given by
+ *                    imageDim.
  */
 C_FUNC_DEF
 ClarityResult_t
-Clarity_IDivergenceDeconvolve(float* outImage, float* inImage, float* psfImage, 
-                              Clarity_Dim3 dim);
+Clarity_IDivergenceDeconvolve(
+  float* inImage, Clarity_Dim3 imageDim,
+  float* kernelImage, Clarity_Dim3 kernelDim,
+  float* outImage);
 
 
 /**
  * Maximum-likelihood deconvolution method cited in the paper:
  * J.B. Sibarita, Deconvolution microscopy, Adv. Biochem. Engin./Biotechnology (2005) 95: 201-243.
  *
- * @param outImage   Caller-allocated buffer holding result of Wiener filter.
- *                   Dimensions of this buffer are given by dim.
- * @param inImage    Image to be deconvolved. Dimensions of this buffer are
- *                   given by dim.
- * @param psfImage   Image of the point-spread function of the system that produced
- *                   the image in the outImage parameter.
- * @param dim        Dimension of outImage, inImage, and psfImage.
- * @param iterations Number of algorithm iterations to run.
+ * @param inImage     Image to be deconvolved. Dimensions of this image are
+ *                    given by imageDim.
+ * @param imageDim    Dimensions of the input image.
+ * @param kernelImage Image of the point-spread function of the system that 
+ *                    produced. Dimensions of this image are given by
+ *                    psfDim.
+ * @param kernelDim   Dimensions of the PSF image.
+ * @param outImage    Caller-allocated buffer holding result of filter.
+ *                    Dimensions of this buffer are given by imageDim.
+ * @param iterations  Number of algorithm iterations to run.
  */
 C_FUNC_DEF
 ClarityResult_t
-Clarity_MaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfImage,
-									         Clarity_Dim3 dim, unsigned iterations);
+Clarity_MaximumLikelihoodDeconvolve(float* inImage, Clarity_Dim3 imageDim,
+				    float* kernelImage, Clarity_Dim3 kernelDim,
+				    float* outImage, int iterations);
 
 /**
  * Blind maximum-likelihood deconvolution method cited in the paper:
@@ -275,19 +308,20 @@ Clarity_BlindMaximumLikelihoodDeconvolve(float* outImage, float* inImage, float*
 /* CONVOLUTION FUNCTIONS */
 /*************************/
 
-/** Convolution function for a real image and a pre-padded and 
- * cyclically-shifted kernel.
+/**
+ * Convolves two images of equal dimensions.
  * 
- * @param dim        Dimension of outImage, inImage, and psfImage.
- * @param inImage    Image to be convolved. Dimensions of this buffer are given by
-                     dim.
- * @param kernel     Convolution kernel.
- * @param outImage   Caller-allocated buffer to store results of the convolution.
+ * @param inImage   Real image to convolve.
+ * @param imageDim  Dimensions of image to convolve.
+ * @param kernel    Convolution kernel.
+ * @param kernelDim Dimensions of convolution kernel.
+ * @param outImage  Resulting real image of convolution of inImage and kernel.
  */
 C_FUNC_DEF
 ClarityResult_t
-Clarity_Convolve(Clarity_Dim3 dim, float* inImage, float* kernel, 
-                 float* outImage);
+Clarity_Convolve(float* inImage, Clarity_Dim3 imageDim,
+		 float* kernel, Clarity_Dim3 kernelDim,
+		 float* outImage);
 
 
 #endif // __CLARITY_LIB_H_

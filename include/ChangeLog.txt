@@ -1,3 +1,7 @@
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Major changes and clearnup of nearly all function prototypes.
+
 2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.h: Created Dim3 type for specifying image dimensions. Chagned
