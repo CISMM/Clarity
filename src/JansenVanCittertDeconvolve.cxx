@@ -23,24 +23,32 @@ Clarity_GetImageMax(
    float *inImage, int numVoxels) {
 
    float max = inImage[0];
+   float val = 0.0f;
+   int tid = 0;
+   int numThreads = 0;
+
 #pragma omp parallel
    {
-      int numThreads = omp_get_num_threads();
-      float *threadMax = new float[numThreads];
-      int tid = omp_get_thread_num();
+     numThreads = omp_get_num_threads();
+   }
+   float *threadMax = new float[numThreads];
+
+#pragma omp parallel private(tid, val)
+   {
+      tid = omp_get_thread_num();
       threadMax[tid] = max;
 
 #pragma omp for
       for (int i = 0; i < numVoxels; i++) {
-         float val = inImage[i];
+         val = inImage[i];
          if (val > threadMax[tid]) threadMax[tid] = val;
       }
-
-      for (int i = 0; i < numThreads; i++) {
-         if (threadMax[i] > max) max = threadMax[i];
-      }
-      delete[] threadMax;
    }
+
+   for (int i = 0; i < numThreads; i++) {
+     if (threadMax[i] > max) max = threadMax[i];
+   }
+   delete[] threadMax;
 
    return max;
 }
@@ -232,38 +240,72 @@ Clarity_JansenVanCittertDeconvolveGPU(
 #endif // BUILD_WITH_CUDA
 
 ClarityResult_t 
-Clarity_JansenVanCittertDeconvolve(
-   float* outImage, float* inImage, float* psfImage, 
-   Clarity_Dim3 dim, unsigned iterations) {
-
-   ClarityResult_t result;
-
-   // Find maximum value in the input image.
-   float max = Clarity_GetImageMax(inImage, dim.x*dim.y*dim.z);
+Clarity_JansenVanCittertDeconvolve(float* inImage, Clarity_Dim3 imageDim,
+				   float* kernelImage, Clarity_Dim3 kernelDim,
+				   float* outImage, int iterations) {
+  ClarityResult_t result = CLARITY_SUCCESS;
 
 #ifdef TIME
-   // We'll start timing here to exclude the on-CPU maximum calculation
-   totalTimer.Start();
+  totalTimer.Start();
 #endif
 
+  // Find maximum value in the input image.
+  float max = Clarity_GetImageMax(inImage, imageDim.x*imageDim.y*imageDim.z);
+
+  // Compute working dimensions. The working dimensions are the sum of the
+  // image and kernel dimensions. This handles the cyclic nature of convolution
+  // using multiplication in the Fourier domain.
+  Clarity_Dim3 workDim;
+  workDim.x = imageDim.x + kernelDim.x;
+  workDim.y = imageDim.y + kernelDim.y;
+  workDim.z = imageDim.z + kernelDim.z;
+  int workVoxels = workDim.x*workDim.y*workDim.z;
+
+  // Pad the input image to the working dimensions
+  float *inImagePad = (float *) malloc(sizeof(float)*workVoxels);
+  int zeroShift[] = {0, 0, 0};
+  float fillValue = 0.0f;
+  Clarity_ImagePadSpatialShift(inImagePad, workDim, inImage, imageDim,
+			       zeroShift, fillValue);
+
+  // Pad the kernel to the working dimensions and shift it so that the
+  // center of the kernel is at the origin.
+  float *kernelImagePad = (float *) malloc(sizeof(float)*workVoxels);
+  int kernelShift[] = {-kernelDim.x/2, -kernelDim.y/2, -kernelDim.z/2};
+  Clarity_ImagePadSpatialShift(kernelImagePad, workDim, kernelImage, kernelDim,
+			       kernelShift, fillValue);
+
+  // Allocate output array
+  float *outImagePad = (float *) malloc(sizeof(float)*workVoxels);
+  
 #ifdef BUILD_WITH_CUDA
-   if (g_CUDACapable) {
-      result = Clarity_JansenVanCittertDeconvolveGPU(outImage, 
-         inImage, psfImage, dim.x, dim.y, dim.z, max, iterations);
-   } else
+  if (g_CUDACapable) {
+    result = Clarity_JansenVanCittertDeconvolveGPU(outImagePad, 
+      inImagePad, kernelImagePad, workDim.x, workDim.y, workDim.z,
+      max, iterations);
+  } else
 #endif // BUILD_WITH_CUDA
-   {
-      result = Clarity_JansenVanCittertDeconvolveCPU(outImage, 
-         inImage, psfImage, dim.x, dim.y, dim.z, max, iterations);
-   }
+  {
+    result = Clarity_JansenVanCittertDeconvolveCPU(outImagePad, 
+      inImagePad, kernelImagePad, workDim.x, workDim.y, workDim.z,
+      max, iterations);
+  }
+
+  // Clip the image to the original dimensions.
+  Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
+
+  // Free up memory.
+  free(inImagePad);
+  free(kernelImagePad);
+  free(outImagePad);
 
 #ifdef TIME
-   totalTimer.Stop();
-   std::cout << totalTimer << std::endl;
-   std::cout << transferTimer << std::endl;
-   totalTimer.Reset();
-   transferTimer.Reset();
+  totalTimer.Stop();
+  std::cout << totalTimer << std::endl;
+  std::cout << transferTimer << std::endl;
+  totalTimer.Reset();
+  transferTimer.Reset();
 #endif
 
-   return result;
+  return result;
 }

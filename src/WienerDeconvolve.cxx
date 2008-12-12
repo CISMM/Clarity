@@ -9,8 +9,6 @@
 #include "FFT.h"
 #include "Memory.h"
 
-//#define CONVOLUTION
-
 #ifdef TIME
 #include <iostream>
 #include "Stopwatch.h"
@@ -162,39 +160,65 @@ Clarity_WienerDeconvolveGPU(
 #endif // BUILD_WITH_CUDA
 
 
-#ifdef CONVOLUTION
-
 ClarityResult_t 
-Clarity_WienerDeconvolve(
-   float* outImage, float* inImage, float* psfImage, 
-   int nx, int ny, int nz, float epsilon) {
+Clarity_WienerDeconvolve(float* inImage, Clarity_Dim3 imageDim,
+			 float* kernelImage, Clarity_Dim3 kernelDim,
+			 float* outImage, float epsilon) {
 
-   return Clarity_Convolve(nx, ny, nz, inImage, psfImage, outImage);
-}
-
-#else
-
-ClarityResult_t 
-Clarity_WienerDeconvolve(
-   float* outImage, float* inImage, float* psfImage, 
-   Clarity_Dim3 dim, float epsilon) {
-
-   int nx = dim.x, ny = dim.y, nz = dim.z;
+  ClarityResult_t result = CLARITY_SUCCESS;
 
 #ifdef TIME
-   totalTimer.Start();
+  totalTimer.Start();
 #endif
 
+  // Compute working dimensions. The working dimensions are the sum of the
+  // image and kernel dimensions. This handles the cyclic nature of convolution
+  // using multiplication in the Fourier domain.
+  Clarity_Dim3 workDim;
+  workDim.x = imageDim.x + kernelDim.x;
+  workDim.y = imageDim.y + kernelDim.y;
+  workDim.z = imageDim.z + kernelDim.z;
+  int workVoxels = workDim.x*workDim.y*workDim.z;
+
+  // Pad the input image to the working dimensions
+  float *inImagePad = (float *) malloc(sizeof(float)*workVoxels);
+  int zeroShift[] = {0, 0, 0};
+  float fillValue = 0.0f;
+  Clarity_ImagePadSpatialShift(inImagePad, workDim, inImage, imageDim,
+			       zeroShift, fillValue);
+
+  // Pad the kernel to the working dimensions and shift it so that the
+  // center of the kernel is at the origin.
+  float *kernelImagePad = (float *) malloc(sizeof(float)*workVoxels);
+  int kernelShift[] = {-kernelDim.x/2, -kernelDim.y/2, -kernelDim.z/2};
+  Clarity_ImagePadSpatialShift(kernelImagePad, workDim, kernelImage, kernelDim,
+			       kernelShift, fillValue);
+
+  // Allocate output array
+  float *outImagePad = (float *) malloc(sizeof(float)*workVoxels);
+
 #ifdef BUILD_WITH_CUDA
-   if (g_CUDACapable) {
-      return Clarity_WienerDeconvolveGPU(outImage, inImage, 
-         psfImage, nx, ny, nz, epsilon);
-   } else
+  if (g_CUDACapable) {
+    result = Clarity_WienerDeconvolveGPU(outImagePad, inImagePad,
+					 kernelImagePad,
+					 workDim.x, workDim.y, workDim.z, 
+					 epsilon);
+  } else
 #endif // BUILD_WITH_CUDA
-   {
-      return Clarity_WienerDeconvolveCPU(outImage, inImage, 
-         psfImage, nx, ny, nz, epsilon);
+  {
+    result = Clarity_WienerDeconvolveCPU(outImagePad, inImagePad,
+					 kernelImagePad,
+					 workDim.x, workDim.y, workDim.z, 
+					 epsilon);
    }
+
+   // Clip the image to the original dimensions.
+   Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
+
+  // Free up memory.
+  free(inImagePad);
+  free(kernelImagePad);
+  free(outImagePad);
 
 #ifdef TIME
    totalTimer.Stop();
@@ -204,8 +228,5 @@ Clarity_WienerDeconvolve(
    transferTimer.Reset();
 #endif
 
-   return CLARITY_SUCCESS;
+   return result;
 }
-
-#endif // CONVOLUTION
-

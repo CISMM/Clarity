@@ -29,11 +29,12 @@ static void IDIVGradient(
 
 ClarityResult_t
 Clarity_IDivergenceDeconvolve(
-   float* outImage, float* inImage, float* psfImage, 
-   Clarity_Dim3 dim) {
+  float* inImage, Clarity_Dim3 imageDim,
+  float* kernelImage, Clarity_Dim3 kernelDim,
+  float* outImage) {
 
    // Temporary code to produce something.
-   int size = dim.x*dim.y*dim.z;
+   int size = imageDim.x*imageDim.y*imageDim.z;
    for (int i = 0; i < size; i++) {
       outImage[i] = 0.0f;
    }

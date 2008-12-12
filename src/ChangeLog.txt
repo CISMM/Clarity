@@ -1,3 +1,18 @@
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitives.cxx: Added #ifdef to work around GCC's buggy OpenMP
+   reduction operations.
+
+   * Convolve.cxx, JansenVanCittertDeconvolve.cxx,
+   MaximumLikelihoodDeconvolve.cxx, WienerDeconvolve.cxx: Significant 
+   changes to make using Clarity_Convolve function easier to use.
+
+   * IDivergenceDeconvolve.cxx: Changed prototype to conform to standard
+   argument list in other function prototypes.
+
+   * JansenVanCittertDeconvolve.cxx: Fixed some funkiness with variables 
+   not being initialized in OpenMP parallel regions.
+
 2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.cxx: Added Clarity_Dim3FromArray helper function.

@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "Clarity.h"
 
 #include "Complex.h"
@@ -11,21 +13,44 @@ extern bool g_CUDACapable;
 #include <iostream>
 #include "Stopwatch.h"
 
-static Stopwatch totalTimer("JansenVanCittert filter (total time)");
-static Stopwatch transferTimer("JansenVanCittert filter (transfer time)");
+static Stopwatch totalTimer("Convolve (total time)");
+static Stopwatch transferTimer("Convolve filter (transfer time)");
 #endif
 
 ClarityResult_t
-Clarity_Convolve(
-   Clarity_Dim3 dim, float* inImage, float* kernel,
-   float* outImage) {
+Clarity_Convolve( float* inImage, Clarity_Dim3 imageDim,
+		  float* kernel, Clarity_Dim3 kernelDim,
+		  float* outImage) {
 
-   int nx = dim.x;   int ny = dim.y;   int nz = dim.z;
+  // Compute working dimensions. The working dimensions are the sum of the
+  // image and kernel dimensions. This handles the cyclic nature of convolution
+  // using multiplication in the Fourier domain.
+  Clarity_Dim3 workDim;
+  workDim.x = imageDim.x + kernelDim.x;
+  workDim.y = imageDim.y + kernelDim.y;
+  workDim.z = imageDim.z + kernelDim.z;
+  int workVoxels = workDim.x*workDim.y*workDim.z;
+
+  // Pad the input image to the working dimensions
+  float *inImagePad = (float *) malloc(sizeof(float)*workVoxels);
+  int zeroShift[] = {0, 0, 0};
+  float fillValue = 0.0f;
+  Clarity_ImagePadSpatialShift(inImagePad, workDim, inImage, imageDim,
+			       zeroShift, fillValue);
+
+  // Pad the kernel to the working dimensions and shift it so that the
+  // center of the kernel is at the origin.
+  float *kernelPad = (float *) malloc(sizeof(float)*workVoxels);
+  int kernelShift[] = {-kernelDim.x/2, -kernelDim.y/2, -kernelDim.z/2};
+  Clarity_ImagePadSpatialShift(kernelPad, workDim, kernel, kernelDim,
+			       kernelShift, fillValue);
+
+  // Allocate output array
+  float *outImagePad = (float *) malloc(sizeof(float)*workVoxels);
 
 #ifdef TIME
    totalTimer.Start();
 #endif
-   int numVoxels = nx*ny*nz;
    ClarityResult_t result = CLARITY_SUCCESS;
 
    // Copy over the input image and PSF.
@@ -35,28 +60,37 @@ Clarity_Convolve(
       float* psf;
       
       result = Clarity_Real_MallocCopy((void**) &in, sizeof(float), 
-         nx, ny, nz, inImage);
+         workDim.x, workDim.y, workDim.z, inImagePad);
       if (result != CLARITY_SUCCESS) {
          return result;
       }
       result = Clarity_Real_MallocCopy((void **) &psf, 
-         sizeof(float), nx, ny, nz, kernel);
+         sizeof(float), workDim.x, workDim.y, workDim.z, kernelPad);
       if (result != CLARITY_SUCCESS) {
          Clarity_Free(in);
          return result;
       }
-      Clarity_ConvolveInternal(nx, ny, nz, in, psf, in);
-      result = Clarity_CopyFromDevice(nx, ny, nz, sizeof(float),
-         outImage, in);
+      Clarity_ConvolveInternal(workDim.x, workDim.y, workDim.z, in, psf, in);
+      result = Clarity_CopyFromDevice(workDim.x, workDim.y, workDim.z, 
+				      sizeof(float), outImagePad, in);
       Clarity_Free(in); Clarity_Free(psf);
 
    } else 
 #endif // BUILD_WITH_CUDA
    {
 
-      Clarity_ConvolveInternal(nx, ny, nz, inImage, kernel, 
-         outImage);
+      Clarity_ConvolveInternal(workDim.x, workDim.y, workDim.z, inImagePad, 
+			       kernelPad, outImagePad);
    }
+
+
+   // Clip the image to the original dimensions.
+   Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
+
+   // Free up memory
+   free(inImagePad);
+   free(kernelPad);
+   free(outImagePad);
 
 #ifdef TIME
    totalTimer.Stop();
