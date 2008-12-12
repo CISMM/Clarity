@@ -1,3 +1,7 @@
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added tests subdirectory.
+
 2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
 
    * HOWTO-Build-Clarity.txt: Updated with instructions for linux.
