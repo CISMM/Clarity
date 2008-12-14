@@ -1,3 +1,7 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Added licensing to top of the file.
+
 2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.h: Major changes and cleanup of nearly all function prototypes.
