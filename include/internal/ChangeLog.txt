@@ -1,3 +1,10 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Complex.h, ComplexCUDA.h, ComputePrimitives.h, ComputePrimitivesGPU.h,
+   Convolve.h, FFT.h, JansenVanCittertDeconvolveGPU.h,
+   MaximumLikelihoodDeconvolve.h, MaximumLikelihoodDeconvolveGPU.h,
+   Memory.h, WienerDeconvolveGPU.h: Added licensing to top of files.
+
 2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
 
    * ComputePrimitivesGPU.h: Added documentation for a parameter in function
