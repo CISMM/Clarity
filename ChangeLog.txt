@@ -1,3 +1,8 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Removed commands for finding FFTW and placed them
+   in a separate module.
+
 2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Added tests subdirectory.
