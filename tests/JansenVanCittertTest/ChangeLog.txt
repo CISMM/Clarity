@@ -1,3 +1,8 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Replaced libraries	to be linked into executable with
+   a variable set by FindFFTW.cmake.
+
 2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt, JansenVanCittertTest.cxx: Initial check-in.
