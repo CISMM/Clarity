@@ -1,5 +1,11 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * CMakeLists.txt: Added inclusion of the gomp (GNU OpenMP) library
+   if the compiler is GNU. Fixed inclusion of FFTW library for CUDA
+   and non-CUDA builds.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * CMakeLists.txt: Removed commands for finding FFTW and placed them
    in a separate module.
 

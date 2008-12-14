@@ -28,6 +28,7 @@ INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}
   ${CUDA_INCLUDE}
   )
 
+LINK_LIBRARIES(${FFTW_LIBRARIES})
 
 SET( Clarity_SRCS
   src/BlindMaximumLikelihoodDeconvolve.cxx
@@ -55,13 +56,17 @@ CONFIGURE_FILE(
   ${Clarity_BINARY_DIR}/Clarity.h
 )
 
+# Enable linking with OpenMP when compiling with gcc
+IF (${CMAKE_COMPILER_IS_GNUCXX})
+  LINK_LIBRARIES(gomp)
+ENDIF (${CMAKE_COMPILER_IS_GNUCXX})
+
 IF(BUILD_WITH_CUDA)
   CUDA_INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}/include)
   CUDA_INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}/include/internal)
   CUDA_ADD_LIBRARY( Clarity ${Clarity_SRCS} ${FOUND_CUFFT})
 ELSE(BUILD_WITH_CUDA)
   INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}/include)
-  LINK_LIBRARIES(${FFTW_LIBRARIES})
   ADD_LIBRARY( Clarity ${Clarity_SRCS})
 ENDIF(BUILD_WITH_CUDA)
 
