@@ -1,5 +1,9 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * HOWTO-Build-Clarity.txt: Updated build instructions.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * CMakeLists.txt: Added inclusion of the gomp (GNU OpenMP) library
    if the compiler is GNU. Fixed inclusion of FFTW library for CUDA
    and non-CUDA builds.
