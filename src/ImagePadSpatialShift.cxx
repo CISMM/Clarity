@@ -24,7 +24,7 @@
 
 #include "Clarity.h"
 
-#include <malloc.h>
+#include <cstdlib>
 
 // WARNING! Only the CPU side is provided here because padding and
 // shifting is a low-frequency operation.

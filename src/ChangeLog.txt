@@ -1,5 +1,10 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * ImagePadSpatialShift.cxx: Changed inclusion of malloc.h (which doesn't
+   exist on Mac OS X, apparently) to inclusion of cstdlib.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * IDivergenceDeconvolve.cxx: For real think I wrapped the last OpenMP thing.
 
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
