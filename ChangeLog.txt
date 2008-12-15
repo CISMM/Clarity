@@ -1,5 +1,11 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * HOWTO-Build-Clarity.txt: Updated instructions to include building FFTW
+   with compiler -fPIC option enabled. This option is needed to create
+   shared libraries from static libraries with the GNU toolchain.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * CMakeLists.txt: Made the Clarity library the specific target for
    various libraries that are getting linked in.
 
