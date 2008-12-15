@@ -1,5 +1,12 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * CMakeLists.txt: Added option to turn OpenMP compilation off (mostly
+   for compiling on gcc 4.0.1 on Mac OS X).
+
+   * Clarity.h.in: Added configuration of BUILD_WITH_OPENMP macro.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * HOWTO-Build-Clarity.txt: Updated build instructions.
 
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>

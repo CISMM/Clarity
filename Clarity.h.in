@@ -11,6 +11,8 @@
 
 #cmakedefine BUILD_WITH_CUDA
 
+#cmakedefine BUILD_WITH_OPENMP
+
 #endif
 
 #include <include/Clarity.h>
