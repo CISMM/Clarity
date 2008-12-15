@@ -1,5 +1,10 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * CMakeLists.txt: Made the Clarity library the specific target for
+   various libraries that are getting linked in.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * CMakeLists.txt: Added option to turn OpenMP compilation off (mostly
    for compiling on gcc 4.0.1 on Mac OS X).
 
