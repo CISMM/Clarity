@@ -26,12 +26,15 @@
 
 #include <fftw3.h>
 #include <iostream>
+
+#ifdef BUILD_WITH_OPENMP
 #include <omp.h>
+#endif // BUILD_WITH_OPENMP
 
 #ifdef BUILD_WITH_CUDA
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#endif
+#endif // BUILD_WITH_CUDA
 
 /** How many clients are registered. */
 static unsigned g_RegisteredClients = 0;
@@ -43,8 +46,11 @@ ClarityResult_t
 Clarity_Register() {
    if (g_RegisteredClients <= 0) {
       fftwf_init_threads();
+
+#ifdef BUILD_WITH_OPENMP
       int np = omp_get_num_procs();
       Clarity_SetNumberOfThreads(np);
+#endif // BUILD_WITH_OPENMP
 
 #ifdef BUILD_WITH_CUDA
       int deviceCount = 0;
@@ -77,9 +83,11 @@ Clarity_UnRegister() {
 
 ClarityResult_t
 Clarity_SetNumberOfThreads(unsigned n) {
+
+#ifdef BUILD_WITH_OPENMP
    omp_set_num_threads(n);
-   int np = omp_get_num_procs();
-   fftwf_plan_with_nthreads(np);
+   fftwf_plan_with_nthreads(n);
+#endif // BUILD_WITH_OPENMP
 
    return CLARITY_SUCCESS;
 }

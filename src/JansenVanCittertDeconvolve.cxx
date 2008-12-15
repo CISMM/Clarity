@@ -26,7 +26,10 @@
 
 #include <iostream>
 #include <stdlib.h>
+
+#ifdef BUILD_WITH_OPENMP
 #include <omp.h>
+#endif // BUILD_WITH_OPENMP
 
 #include "Convolve.h"
 #include "FFT.h"
@@ -47,10 +50,11 @@ Clarity_GetImageMax(
    float *inImage, int numVoxels) {
 
    float max = inImage[0];
+
+#ifdef BUILD_WITH_OPENMP
    float val = 0.0f;
    int tid = 0;
    int numThreads = 0;
-
 #pragma omp parallel
    {
      numThreads = omp_get_num_threads();
@@ -74,6 +78,14 @@ Clarity_GetImageMax(
    }
    delete[] threadMax;
 
+#else // BUILD_WITH_OPENMP
+
+   for (int i = 0; i < numVoxels; i++) {
+     if (inImage[i] > max) max = inImage[i];
+   }
+
+#endif // BUILD_WITH_OPENMP
+
    return max;
 }
 
@@ -85,7 +97,9 @@ JansenVanCittertDeconvolveKernelCPU(
 
    int numVoxels = nx*ny*nz;
 
+#ifdef BUILD_WITH_OPENMP
 #pragma omp parallel for
+#endif // BUILD_WITH_OPENMP
    for (int j = 0; j < numVoxels; j++) {
       float diff = o_k[j] - inMax;
       float gamma = 1.0f - ((diff * diff) * invMaxSq);

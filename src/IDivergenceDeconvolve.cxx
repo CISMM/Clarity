@@ -34,7 +34,9 @@ static float IDIVFunctional(
    float sum = 0.0f;
    int numVoxels = nx*ny*nz;
 
+#ifdef BUILD_WITH_OPENMP
 #pragma omp parallel for reduction(+:sum)
+#endif // BUILD_WITH_OPENMP
    for (int i = 0; i < numVoxels; i++) {
       sum += (g[i]*log(g[i]/gHat[i])) + gHat[i] - g[i] + (alpha*sHat[i]*sHat[i]);
    }

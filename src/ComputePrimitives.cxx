@@ -24,7 +24,10 @@
 
 #include <cmath>
 #include <cstdio>
+
+#ifdef BUILD_WITH_OPENMP
 #include <omp.h>
+#endif // BUILD_WITH_OPENMP
 
 #include "Clarity.h"
 
@@ -45,8 +48,9 @@ Clarity_ReduceSum(float* result, float* buffer, int n) {
 #endif // BUILD_WITH_CUDA
   {
     float sum = 0.0f;
-#ifdef __GNUG__ // OpenMP in GCC is buggy with reductions, so we'll handle
-                // the reduction serially.
+    // OpenMP in GCC is buggy with reductions, so we'll handle the reduction
+    // serially.
+#if not defined(BUILD_WITH_OPENMP) or defined(__GNUG__)
     for (int i = 0; i < n; i++) {
       sum += buffer[i];
     }
@@ -77,7 +81,10 @@ Clarity_MultiplyArraysComponentWise(
   } else
 #endif // BUILD_WITH_CUDA
   {
+
+#ifdef BUILD_WITH_CUDA
 #pragma omp parallel for
+#endif // BUILD_WITH_CUDA
     for (int i = 0; i < n; i++) {
       result[i] = a[i] * b[i];
     }
@@ -99,7 +106,10 @@ Clarity_DivideArraysComponentWise(
    } else
 #endif // BUILD_WITH_CUDA
    {
+
+#ifdef BUILD_WITH_CUDA
 #pragma omp parallel for
+#endif // BUILD_WITH_CUDA
       for (int i = 0; i < n; i++) {
          if (fabs(b[i]) < 1e-5) {
             result[i] = value;
@@ -125,7 +135,10 @@ Clarity_ScaleArray(
    } else
 #endif // BUILD_WITH_CUDA
    {
+
+#ifdef BUILD_WITH_CUDA
 #pragma omp parallel for
+#endif // BUILD_WITH_CUDA
       for (int i = 0; i < n; i++) {
          result[i] = scale * a[i];
       }
