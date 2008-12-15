@@ -1,5 +1,9 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * CMakeLists.txt: Removed unnecessary link libraries.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * WienerFilterTest.cxx: Added license to the top of the file.
 
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>

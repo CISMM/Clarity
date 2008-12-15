@@ -1,5 +1,9 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * CMakeLists.txt: Removed unnecessary link libraries.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * ConvolutionTest.cxx: Added licensing to top of file.
 
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
