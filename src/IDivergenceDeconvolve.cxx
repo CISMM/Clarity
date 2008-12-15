@@ -25,7 +25,10 @@
 #include "Clarity.h"
 
 #include <cmath>
+
+#ifdef BUILD_WITH_OPENMP
 #include <omp.h>
+#endif // BUILD_WITH_OPENMP
 
 static float IDIVFunctional(
    float* g, float* gHat, float* sHat, float alpha, 

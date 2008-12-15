@@ -1,5 +1,9 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * IDivergenceDeconvolve.cxx: For real think I wrapped the last OpenMP thing.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * IDivergenceDeconvolve.cxx: Think I wrapped the last OpenMP thing.
 
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
