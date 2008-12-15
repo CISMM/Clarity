@@ -24,8 +24,8 @@
 
 #include "Clarity.h"
 
-#include "math.h"
-#include "omp.h"
+#include <cmath>
+#include <omp.h>
 
 static float IDIVFunctional(
    float* g, float* gHat, float* sHat, float alpha, 
