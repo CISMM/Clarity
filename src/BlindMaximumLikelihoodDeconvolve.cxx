@@ -26,7 +26,10 @@
 
 #include <cstdio>
 #include <cstdlib>
+
+#ifdef BUILD_WITH_OPENMP
 #include <omp.h>
+#endif // BUILD_WITH_OPENMP
 
 #include "ComputePrimitives.h"
 #include "MaximumLikelihoodDeconvolve.h"

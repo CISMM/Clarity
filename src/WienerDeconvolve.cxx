@@ -25,9 +25,12 @@
 #include "Clarity.h"
 
 #include <iostream>
-#include <omp.h>
 #include <fftw3.h>
 #include <math.h>
+
+#ifdef BUILD_WITH_OPENMP
+#include <omp.h>
+#endif // BUILD_WITH_OPENMP
 
 #include "Complex.h"
 #include "FFT.h"

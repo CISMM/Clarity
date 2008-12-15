@@ -1,5 +1,11 @@
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
+   * BlindMaximumLikelihoodDeconvolve.cxx, MaximumLikelihoodDeconvolve.cxx,
+   WienerDeconvolve.cxx: Missed wrapping OpenMP stuff with BUILD_WITH_OPENMP
+   ifdef last time.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
    * Clarity.cxx, ComputePrimitives.cxx, IDivergenceDeconvolve.cxx,
    JansenVanCittertDeconvolve.cxx: Wrapped OpenMP stuff with BUILD_WITH_OPENMP
    ifdef.
