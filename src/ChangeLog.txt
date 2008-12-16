@@ -1,3 +1,10 @@
+2008-12-15  Cory Quammen <cquammen@cs.unc.edu>
+
+   * BlindMaximumLikelihoodDeconvolve.cxx: Partial implementation of blind
+   deconvolution.
+
+   * ComputePrimitives.cxx: Added array (image) normalization.
+
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
    * ImagePadSpatialShift.cxx: Changed inclusion of malloc.h (which doesn't

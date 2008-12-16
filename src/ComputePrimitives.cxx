@@ -82,9 +82,9 @@ Clarity_MultiplyArraysComponentWise(
 #endif // BUILD_WITH_CUDA
   {
 
-#ifdef BUILD_WITH_CUDA
+#ifdef BUILD_WITH_OPENMP
 #pragma omp parallel for
-#endif // BUILD_WITH_CUDA
+#endif // BUILD_WITH_OPENMP
     for (int i = 0; i < n; i++) {
       result[i] = a[i] * b[i];
     }
@@ -107,9 +107,9 @@ Clarity_DivideArraysComponentWise(
 #endif // BUILD_WITH_CUDA
    {
 
-#ifdef BUILD_WITH_CUDA
+#ifdef BUILD_WITH_OPENMP
 #pragma omp parallel for
-#endif // BUILD_WITH_CUDA
+#endif // BUILD_WITH_OPENMP
       for (int i = 0; i < n; i++) {
          if (fabs(b[i]) < 1e-5) {
             result[i] = value;
@@ -136,13 +136,28 @@ Clarity_ScaleArray(
 #endif // BUILD_WITH_CUDA
    {
 
-#ifdef BUILD_WITH_CUDA
+#ifdef BUILD_WITH_OPENMP
 #pragma omp parallel for
-#endif // BUILD_WITH_CUDA
+#endif // BUILD_WITH_OPENMP
       for (int i = 0; i < n; i++) {
          result[i] = scale * a[i];
       }
    }
 
    return err;
+}
+
+
+ClarityResult_t
+Clarity_NormalizeArray(float* result, float* a, int n) {
+  ClarityResult_t err = CLARITY_SUCCESS;
+
+  float sum = 0.0f;
+  err = Clarity_ReduceSum(&sum, a, n);
+  if (err != CLARITY_SUCCESS) {
+    return err;
+  }
+  err = Clarity_ScaleArray(result, a, n, 1.0f/sum);
+
+  return err;
 }
