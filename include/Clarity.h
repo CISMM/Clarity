@@ -313,19 +313,23 @@ Clarity_MaximumLikelihoodDeconvolve(float* inImage, Clarity_Dim3 imageDim,
  * Blind maximum-likelihood deconvolution method cited in the paper:
  * J.B. Sibarita, Deconvolution microscopy, Adv. Biochem. Engin./Biotechnology (2005) 95: 201-243.
  *
- * @param outImage   Caller-allocated buffer holding result of Wiener filter.
- *                   Dimensions of this buffer are given by dim.
- * @param inImage    Image to be deconvolved. Dimensions of this buffer are
- *                   given by dim.
- * @param psfImage   Image of the point-spread function of the system that produced
- *                   the image in the outImage parameter.
- * @param dim        Dimension of outImage, inImage, and psfImage.
- * @param iterations Number of algorithm iterations to run.
+ * @param inImage     Image to be deconvolved. Dimensions of this image are
+ *                    given by imageDim.
+ * @param imageDim    Dimensions of the input image.
+ * @param kernelImage Initial guess as to the blur kernel. For this method to
+ *                    work well, this should be initialized as close as
+ *                    possible to the kernel that is ultimately recovered.
+ * @param kernelDim   Dimensions of the PSF image.
+ * @param outImage    Caller-allocated buffer holding result of filter.
+ *                    Dimensions of this buffer are given by imageDim.
+ * @param iterations  Number of algorithm iterations to run.
  */
 C_FUNC_DEF
 ClarityResult_t
-Clarity_BlindMaximumLikelihoodDeconvolve(float* outImage, float* inImage, float* psfImage,
-                                         Clarity_Dim3 dim, unsigned iterations);
+Clarity_BlindMaximumLikelihoodDeconvolve(
+  float* inImage, Clarity_Dim3 imageDim, 
+  float* kernelImage, Clarity_Dim3 kernelDim,
+  float* outImage, int iterations);
 
 
 /*************************/
