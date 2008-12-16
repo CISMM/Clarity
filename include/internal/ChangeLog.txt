@@ -1,3 +1,7 @@
+2008-12-15  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitives.h: Added array (image) normalization function.
+
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
    * Complex.h, ComplexCUDA.h, ComputePrimitives.h, ComputePrimitivesGPU.h,

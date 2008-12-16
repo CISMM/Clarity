@@ -77,5 +77,14 @@ ClarityResult_t
 Clarity_ScaleArray(
    float* result, float* a, int n, float scale);
 
+/**
+ * Normalizes an array (scales pixels values so that their sum is 1).
+ *
+ * @param result The normalized array.
+ * @param input  The input array.
+ * @param n      Length of array.
+ */
+ClarityResult_t
+Clarity_NormalizeArray(float* result, float *a, int n);
 
 #endif // __COMPUTE_PRIMITIVES_H_
