@@ -38,6 +38,11 @@ int main(int argc, char* argv[]) {
   inputImage  = Test_GenerateTrueImage(&imageDims);
   kernelImage = Test_GenerateGaussianKernel(&kernelDims, 3.0f);
 
+  printf("Image dimensions: (%d, %d, %d)\n", 
+	 imageDims.x, imageDims.y, imageDims.z);
+  printf("Kernel dimensions: (%d, %d, %d)\n",
+	 kernelDims.x, kernelDims.y, kernelDims.z);
+
   // Write image and PSF to files.
   FILE *fp = fopen("image_f32.raw", "wb");
   fwrite(inputImage, sizeof(float), imageDims.x*imageDims.y*imageDims.z, fp);
@@ -68,9 +73,12 @@ int main(int argc, char* argv[]) {
   // Now we are ready to apply a deconvolution algorithm. We'll try the
   // maximum likelihood algorithm.
   int iterations = 10;
-  Clarity_JansenVanCittertDeconvolve(convolvedImage, imageDims,
-                                     kernelImage, kernelDims,
-                                     deconvolvedImage, iterations);
+  printf("Jansen-van Cittert iterations: %d\n", iterations);
+  for (int i = 0; i < 10; i++) {
+    Clarity_JansenVanCittertDeconvolve(convolvedImage, imageDims,
+				       kernelImage, kernelDims,
+				       deconvolvedImage, iterations);
+  }
 
   // Write out deconvolved image.
   fp = fopen("deconvolved_f32.raw", "wb");

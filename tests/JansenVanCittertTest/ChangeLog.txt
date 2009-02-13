@@ -1,3 +1,9 @@
+2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
+
+   * JansenVanCittertTest.cxx: Added output of image and kernel dimensions and
+   number of deconvolution iterations. Also, added loop to run deconvolution
+   10 times.
+
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Removed unnecessary link libraries.
