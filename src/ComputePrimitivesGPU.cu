@@ -56,12 +56,12 @@ int getReduceThreadsPerBlock() {
 }
 
 
-#define CLARITY_STREAM_BLOCKS_ENV            "CLARITY_STREAM_BLOCKS"
-#define CLARITY_STREAM_THREADS_PER_BLOCK_ENV "CLARITY_STREAM_THREADS_PER_BLOCK"
+#define CLARITY_MAP_BLOCKS_ENV            "CLARITY_MAP_BLOCKS"
+#define CLARITY_MAP_THREADS_PER_BLOCK_ENV "CLARITY_MAP_THREADS_PER_BLOCK"
 
-int getStreamBlocks() {
+int getMapBlocks() {
   int numBlocks = DEFAULT_BLOCKS;
-  char *blockString = getenv(CLARITY_STREAM_BLOCKS_ENV);
+  char *blockString = getenv(CLARITY_MAP_BLOCKS_ENV);
   if (blockString) {
     numBlocks = atoi(blockString);
   }
@@ -70,9 +70,9 @@ int getStreamBlocks() {
 }
 
 
-int getStreamThreadsPerBlock() {
+int getMapThreadsPerBlock() {
   int numThreadsPerBlock = DEFAULT_THREADS_PER_BLOCK;
-  char *threadsPerBlockString = getenv(CLARITY_STREAM_THREADS_PER_BLOCK_ENV);
+  char *threadsPerBlockString = getenv(CLARITY_MAP_THREADS_PER_BLOCK_ENV);
   if (threadsPerBlockString) {
     numThreadsPerBlock = atoi(threadsPerBlockString);
   }
@@ -161,8 +161,8 @@ void
 Clarity_MultiplyArraysComponentWiseGPU(float* result, float* a, float* b, int n) {
   
   // Set up device call configuration.
-  dim3 gridSize(getStreamBlocks());
-  dim3 blockSize(getStreamThreadsPerBlock());
+  dim3 gridSize(getMapBlocks());
+  dim3 blockSize(getMapThreadsPerBlock());
 
   MultiplyArraysComponentWiseKernelGPU<<<gridSize, blockSize>>>
     (result, a, b, n);
@@ -190,8 +190,8 @@ void
 Clarity_DivideArraysComponentWiseGPU(float* result, float* a, float* b, float value, int n) {
   
   // Set up device call configuration.
-  dim3 gridSize(getStreamBlocks());
-  dim3 blockSize(getStreamThreadsPerBlock());
+  dim3 gridSize(getMapBlocks());
+  dim3 blockSize(getMapThreadsPerBlock());
   
   DivideArraysComponentWiseKernelGPU<<<gridSize, blockSize>>>
     (result, a, b, value, n);
@@ -216,8 +216,8 @@ void
 Clarity_ScaleArrayGPU(float* result, float* a, int n, float scale) {
   
   // Set up device call configuration.
-  dim3 gridSize(getStreamBlocks());
-  dim3 blockSize(getStreamThreadsPerBlock());
+  dim3 gridSize(getMapBlocks());
+  dim3 blockSize(getMapThreadsPerBlock());
   
   ScaleArrayKernelGPU<<<gridSize, blockSize>>>
     (result, a, n, scale);

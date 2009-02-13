@@ -31,8 +31,8 @@
 
 #include "JansenVanCittertDeconvolveGPU.h"
 
-extern int getStreamBlocks();
-extern int getStreamThreadsPerBlock();
+extern int getMapBlocks();
+extern int getMapThreadsPerBlock();
 
 
 __global__
@@ -60,8 +60,8 @@ JansenVanCittertDeconvolveKernelGPU(
    float* i_k, float* o_k, float* i_kNext) {
 
    int n = nz*ny*nx;
-   dim3 grid(getStreamBlocks());
-   dim3 block(getStreamThreadsPerBlock());
+   dim3 grid(getMapBlocks());
+   dim3 block(getMapThreadsPerBlock());
 
    JansenVanCittertCUDAKernel<<<grid, block>>>(n, in, inMax, invMaxSq, 
       i_k, o_k, i_kNext);

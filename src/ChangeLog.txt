@@ -1,5 +1,11 @@
 2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
 
+   * ComputePrimitivesGPU.cu, JansenVanCittertDeconvolveGPU.cu,
+   WienerDeconvolveGPU.cu: Settled on term 'map' instead of 'stream' to
+   refer to processing independent elements of one or more arrays.
+
+2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
+
    * BlindMaximumLikelihoodDeconvolve.cxx: Added include of
    MaximumLikelihoodDeconvolve.h to eliminate errors about undefined types.
 

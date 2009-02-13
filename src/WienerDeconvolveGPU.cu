@@ -28,8 +28,8 @@
 #include "ComplexCUDA.h"
 #include "WienerDeconvolveGPU.h"
 
-extern int getStreamBlocks();
-extern int getStreamThreadsPerBlock();
+extern int getMapBlocks();
+extern int getMapThreadsPerBlock();
 
 __global__
 void
@@ -58,8 +58,8 @@ WienerDeconvolveKernelGPU(
    float* outFT, float epsilon) {
 
    int n = nz*ny*(nx/2 + 1);
-   dim3 grid(getStreamBlocks());
-   dim3 block(getStreamThreadsPerBlock());
+   dim3 grid(getMapBlocks());
+   dim3 block(getMapThreadsPerBlock());
    float scale = 1.0f / ((float) nx*ny*nz);
 
    WienerCUDAKernel<<<grid, block>>>(n, scale, (Complex*)inFT,
