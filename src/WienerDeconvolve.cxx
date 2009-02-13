@@ -36,12 +36,9 @@
 #include "FFT.h"
 #include "Memory.h"
 
-#ifdef TIME
+#if defined(TIME_TOTAL) || defined(TIME_DECONVOLVE) || defined(TIME_MAP)
 #include <iostream>
 #include "Stopwatch.h"
-
-static Stopwatch totalTimer("Wiener filter (total time)");
-static Stopwatch transferTimer("Wiener filter (transfer time)");
 #endif
 
 extern bool g_CUDACapable;
@@ -49,67 +46,78 @@ extern bool g_CUDACapable;
 
 void
 WienerDeconvolveKernelCPU(
-   int nx, int ny, int nz, float* inFT, float* psfFT, 
-   float* result, float epsilon) {
+  int nx, int ny, int nz, float* inFT, float* psfFT, 
+  float* result, float epsilon) {
 
-   int numVoxels = nz*ny*(nx/2 + 1);
-   float scale = 1.0f / ((float) nz*ny*nx);
+  int numVoxels = nz*ny*(nx/2 + 1);
+  float scale = 1.0f / ((float) nz*ny*nx);
 
    // From Sibarita, "Deconvolution Microscopy"
 #pragma omp parallel for
-   for (int i = 0; i < numVoxels; i++) {
-      float H[2] = {psfFT[2*i + 0], psfFT[2*i + 1]};
-      float HConj[2];
-      ComplexConjugate(H, HConj);
-      float HMagSquared = ComplexMagnitudeSquared(H);
-      ComplexMultiply(HConj, 1.0f / (HMagSquared + epsilon), HConj);
-      ComplexMultiplyAndScale(HConj, inFT + (2*i), scale, result + (2*i));
-   }
+  for (int i = 0; i < numVoxels; i++) {
+    float H[2] = {psfFT[2*i + 0], psfFT[2*i + 1]};
+    float HConj[2];
+    ComplexConjugate(H, HConj);
+    float HMagSquared = ComplexMagnitudeSquared(H);
+    ComplexMultiply(HConj, 1.0f / (HMagSquared + epsilon), HConj);
+    ComplexMultiplyAndScale(HConj, inFT + (2*i), scale, result + (2*i));
+  }
 }
 
 
 ClarityResult_t
 Clarity_WienerDeconvolveCPU(
-   float* outImage, float* inImage, float* psfImage,
-   int nx, int ny, int nz, float epsilon) {
+  float* outImage, float* inImage, float* psfImage,
+  int nx, int ny, int nz, float epsilon) {
 
-   ClarityResult_t result = CLARITY_SUCCESS;
+  ClarityResult_t result = CLARITY_SUCCESS;
 
-   // Forward Fourier transform of input image.
-   float* inFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      return result;
-   }
-   result = Clarity_FFT_R2C_float(nx, ny, nz, inImage, inFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(inFT);
-      return result;
-   }
+  // Forward Fourier transform of input image.
+  float* inFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), 
+                                  nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    return result;
+  }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, inImage, inFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(inFT);
+    return result;
+  }
    
-   // Fourier transform of PSF.
-   float* psfFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(inFT);
-      return CLARITY_OUT_OF_MEMORY;
-   }
-   result = Clarity_FFT_R2C_float(nx, ny, nz, psfImage, psfFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(inFT); Clarity_Free(psfFT);
-      return result;
-   }
+  // Fourier transform of PSF.
+  float* psfFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), 
+                                  nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(inFT);
+    return CLARITY_OUT_OF_MEMORY;
+  }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, psfImage, psfFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(inFT); Clarity_Free(psfFT);
+    return result;
+  }
 
-   WienerDeconvolveKernelCPU(nx, ny, nz, inFT, psfFT, inFT, epsilon);
+#ifdef TIME_MAP
+  Stopwatch kernelTimer("WienerDeconvolveKernelCPU");
+  kernelTimer.Reset();
+  kernelTimer.Start();
+#endif // TIME_MAP
 
-   result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, outImage);
+  WienerDeconvolveKernelCPU(nx, ny, nz, inFT, psfFT, inFT, epsilon);
+   
+#ifdef TIME_MAP
+  kernelTimer.Stop();
+  std::cout << kernelTimer << std::endl;
+#endif // TIME_MAP
 
-   Clarity_Free(inFT);
-   Clarity_Free(psfFT);
+  result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, outImage);
 
-   return result;
+  Clarity_Free(inFT);
+  Clarity_Free(psfFT);
+
+  return result;
 }
 
 
@@ -120,68 +128,80 @@ Clarity_WienerDeconvolveCPU(
 
 ClarityResult_t
 Clarity_WienerDeconvolveGPU(
-   float* outImage, float* inImage, float* psfImage,
-   int nx, int ny, int nz, float epsilon) {
+  float* outImage, float* inImage, float* psfImage,
+  int nx, int ny, int nz, float epsilon) {
 
-   ClarityResult_t result = CLARITY_SUCCESS;
+  ClarityResult_t result = CLARITY_SUCCESS;
 
-   // Send PSF image.
-   float* psf = NULL;
-   result = Clarity_Real_MallocCopy((void**) &psf, sizeof(float),
-      nx, ny, nz, psfImage);
-   if (result != CLARITY_SUCCESS) {
-      return result;
-   }
+  // Send PSF image.
+  float* psf = NULL;
+  result = Clarity_Real_MallocCopy((void**) &psf, sizeof(float),
+                                   nx, ny, nz, psfImage);
+  if (result != CLARITY_SUCCESS) {
+    return result;
+  }
 
-   // Fourier transform of PSF.
-   float* psfFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psf);
-      return result;
-   }
-   result = Clarity_FFT_R2C_float(nx, ny, nz, psf, psfFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psf); Clarity_Free(psfFT);
-      return result;
-   }
-   Clarity_Free(psf); // Don't need this anymore.
+  // Fourier transform of PSF.
+  float* psfFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), 
+                                  nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psf);
+    return result;
+  }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, psf, psfFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psf); Clarity_Free(psfFT);
+    return result;
+  }
+  Clarity_Free(psf); // Don't need this anymore.
+  
+  // Send input image.
+  float* in = NULL;
+  result = Clarity_Real_MallocCopy((void**) &in, sizeof(float), 
+                                   nx, ny, nz, inImage);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT);
+    return result;
+  }
 
-   // Send input image.
-   float* in = NULL;
-   result = Clarity_Real_MallocCopy((void**) &in, sizeof(float), 
-      nx, ny, nz, inImage);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT);
-      return result;
-   }
+  // Forward Fourier transform of input image.
+  float* inFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), 
+                                  nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT); Clarity_Free(in);
+    return result;
+  }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, in, inFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(inFT);
+    return result;
+  }
 
-   // Forward Fourier transform of input image.
-   float* inFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(in);
-      return result;
-   }
-   result = Clarity_FFT_R2C_float(nx, ny, nz, in, inFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(inFT);
-      return result;
-   }
+#ifdef TIME_MAP
+  Stopwatch kernelTimer("WienerDeconvolveKernelGPU");
+  kernelTimer.Reset();
+  kernelTimer.Start();
+#endif // TIME_MAP
 
-   // Apply Wiener filter
-   WienerDeconvolveKernelGPU(nx, ny, nz, inFT, psfFT, inFT, 
-      epsilon);
+  // Apply Wiener filter
+  WienerDeconvolveKernelGPU(nx, ny, nz, inFT, psfFT, inFT, 
+                            epsilon);
 
-   result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, in);
+#ifdef TIME_MAP
+  kernelTimer.Stop();
+  std::cout << kernelTimer << std::endl;
+#endif
+
+  result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, in);
    
-   // Read back
-   result = Clarity_CopyFromDevice(nx, ny, nz, sizeof(float), 
-      outImage, in);
-
-   return result;
+  // Read back
+  result = Clarity_CopyFromDevice(nx, ny, nz, sizeof(float), 
+                                  outImage, in);
+  Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(inFT);
+  
+  return result;
 }
 
 #endif // BUILD_WITH_CUDA
@@ -194,9 +214,11 @@ Clarity_WienerDeconvolve(float* inImage, Clarity_Dim3 imageDim,
 
   ClarityResult_t result = CLARITY_SUCCESS;
 
-#ifdef TIME
+#ifdef TIME_TOTAL
+  Stopwatch totalTimer("WienerDeconvolveTotal");
+  totalTimer.Reset();
   totalTimer.Start();
-#endif
+#endif // TIME_TOTAL
 
   // Compute working dimensions. The working dimensions are the sum of the
   // image and kernel dimensions. This handles the cyclic nature of convolution
@@ -224,6 +246,12 @@ Clarity_WienerDeconvolve(float* inImage, Clarity_Dim3 imageDim,
   // Allocate output array
   float *outImagePad = (float *) malloc(sizeof(float)*workVoxels);
 
+#ifdef TIME_DECONVOLVE
+  Stopwatch deconvolveTimer("WienerDeconvolveOnly");
+  deconvolveTimer.Reset();
+  deconvolveTimer.Start();
+#endif // TIME_DECONVOLVE
+
 #ifdef BUILD_WITH_CUDA
   if (g_CUDACapable) {
     result = Clarity_WienerDeconvolveGPU(outImagePad, inImagePad,
@@ -239,6 +267,11 @@ Clarity_WienerDeconvolve(float* inImage, Clarity_Dim3 imageDim,
 					 epsilon);
    }
 
+#ifdef TIME_DECONVOLVE
+   deconvolveTimer.Stop();
+   std::cout << deconvolveTimer << std::endl;
+#endif // TIME_DECONVOLVE
+
    // Clip the image to the original dimensions.
    Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
 
@@ -247,13 +280,10 @@ Clarity_WienerDeconvolve(float* inImage, Clarity_Dim3 imageDim,
   free(kernelImagePad);
   free(outImagePad);
 
-#ifdef TIME
+#ifdef TIME_TOTAL
    totalTimer.Stop();
    std::cout << totalTimer << std::endl;
-   std::cout << transferTimer << std::endl;
-   totalTimer.Reset();
-   transferTimer.Reset();
-#endif
+#endif // TIME_TOTAL
 
    return result;
 }

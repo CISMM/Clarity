@@ -34,6 +34,7 @@
 #include "ComputePrimitives.h"
 #include "Convolve.h"
 #include "FFT.h"
+#include "MaximumLikelihoodDeconvolve.h"
 #include "Memory.h"
 
 extern bool g_CUDACapable;

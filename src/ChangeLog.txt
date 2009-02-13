@@ -1,3 +1,52 @@
+2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
+
+   * BlindMaximumLikelihoodDeconvolve.cxx: Added include of
+   MaximumLikelihoodDeconvolve.h to eliminate errors about undefined types.
+
+   * Clarity.cxx: Added check for environment variable CLARITY_NP that
+   determines the number of processing elements that should be used.
+
+   * ComputePrimitives.cxx: Lots of formatting changes. Added timers around
+   various bits of code.
+
+   * ComputePrimitivesGPU.h: Added check for environment variables defining
+   how many blocks and threads per block should be used for reduction and
+   streaming operations. Also, changed the default values to those that 
+   performed the best in some tests I ran on a Quadro FX 5600. Made the
+   ReduceSumKernelGPU CUDA kernel much more efficient by replacing per
+   iteration reduction with a single reduction of an accumulator block
+   at the end.
+
+   * Convolve.cxx: Added timers.
+
+   * FFT.cxx: Replaced #ifdef checks for TIME with checks for more specific
+   option TIME_FFT.
+
+   * FFTGPU.cu: Added checks for environment variables defining how many
+   blocks and threads per block to use in the modulate kernel.
+
+   * ImageClip.cxx: Fixed a serious indexing error that didn't cause problems
+   when the x-dimension of the image was the same size as the y-dimension.
+
+   * JansenVanCittertDeconvolve.cxx: Added finer grained timers measuring
+   specific operations.
+
+   * JansenVanCittertDeconvolveGPU.cu: Added check for environment variables
+   defining how many blocks and threads per block should be used for
+   streaming operations.
+
+   * MaximumLikelihoodDeconvolve.cxx, Memory.cxx: Formatting changes. Added
+   finer-grained timers around various operations.
+
+   * Stopwatch.cxx: Removed #ifdef check for TIME. We'll just compile this
+   no matter what.
+
+   * WienerDeconvolve.cxx: Added forgotten calls to free, removing a memory
+   leak. Added finer-grained timers.
+
+   * WienerDeconvolveGPU.cu: Added check for environment variables defining
+   how many blocks and threads per block to use.
+
 2008-12-15  Cory Quammen <cquammen@cs.unc.edu>
 
    * BlindMaximumLikelihoodDeconvolve.cxx: Partial implementation of blind

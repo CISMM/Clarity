@@ -17,10 +17,8 @@
 
 //------------------------------------------------------------------------------
 // Stopwatch -- a cross platform performance timing class 
-// $Id: Stopwatch.cxx,v 1.1 2007/09/24 21:03:51 cquammen Exp $
+// $Id: Stopwatch.cxx,v 1.2 2009/02/13 15:58:51 cquammen Exp $
 //------------------------------------------------------------------------------
-
-#ifdef TIME
 
 #include <stdio.h>  // for sprintf on some platforms
 #include "Stopwatch.h"
@@ -319,4 +317,3 @@ float CPUStopwatchGeneric::diffTime() const
   return (clock()-lastStamp)/float(CLOCKS_PER_SEC);
 }
 
-#endif // TIME

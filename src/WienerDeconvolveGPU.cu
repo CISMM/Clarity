@@ -28,9 +28,8 @@
 #include "ComplexCUDA.h"
 #include "WienerDeconvolveGPU.h"
 
-#define BLOCKS 16
-#define THREADS_PER_BLOCK 128
-
+extern int getStreamBlocks();
+extern int getStreamThreadsPerBlock();
 
 __global__
 void
@@ -38,8 +37,8 @@ WienerCUDAKernel(
    int n, float scale, Complex* inFT, Complex* psfFT, 
    Complex* outFT, float epsilon) {
 
-   const int tid     = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
-   const int threadN = __mul24(blockDim.x, gridDim.x);
+   const int tid     = blockIdx.x*blockDim.x + threadIdx.x;
+   const int threadN = blockDim.x*gridDim.x;
 
    for (int voxelID = tid; voxelID < n; voxelID += threadN) {
       Complex H = psfFT[voxelID];
@@ -59,8 +58,8 @@ WienerDeconvolveKernelGPU(
    float* outFT, float epsilon) {
 
    int n = nz*ny*(nx/2 + 1);
-   dim3 grid(BLOCKS);
-   dim3 block(THREADS_PER_BLOCK);
+   dim3 grid(getStreamBlocks());
+   dim3 block(getStreamThreadsPerBlock());
    float scale = 1.0f / ((float) nx*ny*nz);
 
    WienerCUDAKernel<<<grid, block>>>(n, scale, (Complex*)inFT,

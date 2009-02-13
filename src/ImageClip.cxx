@@ -39,7 +39,7 @@ Clarity_ImageClip(float *dst, Clarity_Dim3 dstDim,
       for (int dj = 0; dj < dstDim.y; dj++) {
          for (int di = 0; di < dstDim.x; di++) {
             int dIndex = (dk*dstDim.y*dstDim.x) + (dj*dstDim.x) + di;
-            int sIndex = (dk*srcDim.y*srcDim.y) + (dj*srcDim.x) + di;
+            int sIndex = (dk*srcDim.y*srcDim.x) + (dj*srcDim.x) + di;
             dst[dIndex] = src[sIndex];
          }
       }

@@ -39,121 +39,118 @@
 
 extern bool g_CUDACapable;
 
-#ifdef TIME
+#if defined(TIME_TOTAL) || defined(TIME_DECONVOLVE) || defined(TIME_MAP)
 #include <iostream>
 #include "Stopwatch.h"
-
-static Stopwatch totalTimer("MaximumLikelihood filter (total time)");
-static Stopwatch transferTimer("MaximumLikelihood filter (transfer time)");
 #endif
 
 
 ClarityResult_t
 Clarity_MaximumLikelihoodUpdate(
-   int nx, int ny, int nz, float* in, float energy,
-   float* currentGuess, float* otf, float* s1, float* s2, 
-   float* newGuess) {
+  int nx, int ny, int nz, float* in, float energy,
+  float* currentGuess, float* otf, float* s1, float* s2, 
+  float* newGuess) {
 
-   ClarityResult_t result = CLARITY_SUCCESS;
+  ClarityResult_t result = CLARITY_SUCCESS;
 
-   // 1. Convolve current guess with h
-   result = Clarity_Convolve_OTF(nx, ny, nz, currentGuess, otf, s1);	  
-   if (result != CLARITY_SUCCESS) return result;
+  // 1. Convolve current guess with h
+  result = Clarity_Convolve_OTF(nx, ny, nz, currentGuess, otf, s1);	  
+  if (result != CLARITY_SUCCESS) return result;
 
-   // 2. Point-wise divide with current guess (i/guess)
-   int numVoxels = nx*ny*nz;
-   Clarity_DivideArraysComponentWise(s1, in, s1, 0.0f, numVoxels);
+  // 2. Point-wise divide with current guess (i/guess)
+  int numVoxels = nx*ny*nz;
+  Clarity_DivideArraysComponentWise(s1, in, s1, 0.0f, numVoxels);
 
-   // 3. Convolve result with h
-   result = Clarity_Convolve_OTF(nx, ny, nz, s1, otf, s2);
-   if (result != CLARITY_SUCCESS) return result;
+  // 3. Convolve result with h
+  result = Clarity_Convolve_OTF(nx, ny, nz, s1, otf, s2);
+  if (result != CLARITY_SUCCESS) return result;
 
-   // 4. Point-wise multiply by current guess.
-   Clarity_MultiplyArraysComponentWise(newGuess, currentGuess, 
-      s2, numVoxels);
+  // 4. Point-wise multiply by current guess.
+  Clarity_MultiplyArraysComponentWise(newGuess, currentGuess, 
+                                      s2, numVoxels);
 
-   // 5. Compute energy preservation scaling factor.
-   float newEnergy = 0.0f;
-   Clarity_ReduceSum(&newEnergy, newGuess, nx*ny*nz);
+  // 5. Compute energy preservation scaling factor.
+  float newEnergy = 0.0f;
+  Clarity_ReduceSum(&newEnergy, newGuess, nx*ny*nz);
 
-   // 6. Rescale to normalize energy.
-   float scale = energy / newEnergy;
-   Clarity_ScaleArray(newGuess, newGuess, numVoxels, scale);
+  // 6. Rescale to normalize energy.
+  float scale = energy / newEnergy;
+  Clarity_ScaleArray(newGuess, newGuess, numVoxels, scale);
 
-   return result;
+  return result;
 }
 
 
 ClarityResult_t 
 Clarity_MaximumLikelihoodDeconvolveCPU(
-   float* outImage, float* inImage, float* psfImage, 
-   int nx, int ny, int nz, unsigned iterations) {
+  float* outImage, float* inImage, float* psfImage, 
+  int nx, int ny, int nz, unsigned iterations) {
 
-   ClarityResult_t result = CLARITY_SUCCESS;
+  ClarityResult_t result = CLARITY_SUCCESS;
 
-   // Fourier transform of PSF.
-   float* psfFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &psfFT, 
-      sizeof(float), nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      return result;
-   }
-   result = Clarity_FFT_R2C_float(nx, ny, nz, psfImage, psfFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT);
-      return result;
-   }
+  // Fourier transform of PSF.
+  float* psfFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &psfFT, 
+                                  sizeof(float), nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    return result;
+  }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, psfImage, psfFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT);
+    return result;
+  }
+  
+  // Set up the array holding the current guess.
+  float* iPtr = NULL;
+  result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float),
+                               nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT);
+    return CLARITY_OUT_OF_MEMORY;
+  }
 
-   // Set up the array holding the current guess.
-   float* iPtr = NULL;
-   result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float),
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT);
-      return CLARITY_OUT_OF_MEMORY;
-   }
+  // Storage for intermediate array
+  float* s1 = NULL;
+  result = Clarity_Real_Malloc((void**) &s1, sizeof(float),
+                               nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT); Clarity_Free(iPtr); 
+    return result;
+  }
 
-   // Storage for intermediate array
-   float* s1 = NULL;
-   result = Clarity_Real_Malloc((void**) &s1, sizeof(float),
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(iPtr); 
-      return result;
-   }
+  // Storage for convolution of current guess with the PSF.
+  float* s2 = NULL;
+  result = Clarity_Real_Malloc((void**) &s2, sizeof(float),
+                               nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT); Clarity_Free(iPtr); Clarity_Free(s1); 
+    return result;
+  }
 
-   // Storage for convolution of current guess with the PSF.
-   float* s2 = NULL;
-   result = Clarity_Real_Malloc((void**) &s2, sizeof(float),
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(iPtr); Clarity_Free(s1); 
-      return result;
-   }
+  // Compute original energy in the image
+  float energy;
+  Clarity_ReduceSum(&energy, inImage, nx*ny*nz);
 
-   // Compute original energy in the image
-   float energy;
-   Clarity_ReduceSum(&energy, inImage, nx*ny*nz);
+  // Iterate
+  int numVoxels = nx*ny*nz;	 
+  for (unsigned k = 0; k < iterations; k++) {
+    float* currentGuess = (k == 0 ? inImage : iPtr);
+    float* newGuess     = (k == iterations-1 ? outImage : iPtr);
 
-   // Iterate
-   int numVoxels = nx*ny*nz;	 
-   for (unsigned k = 0; k < iterations; k++) {
-	   float* currentGuess = (k == 0 ? inImage : iPtr);
-      float* newGuess     = (k == iterations-1 ? outImage : iPtr);
-
-      result = Clarity_MaximumLikelihoodUpdate(nx, ny, nz, 
+    result = Clarity_MaximumLikelihoodUpdate(nx, ny, nz, 
          inImage, energy, currentGuess, psfFT, s1, s2, newGuess);
-      if (result != CLARITY_SUCCESS) {
-         Clarity_Free(psfFT); Clarity_Free(iPtr); 
-         Clarity_Free(s1); Clarity_Free(s2);
-         return result;
-      }
-   }
+    if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT); Clarity_Free(iPtr); 
+      Clarity_Free(s1); Clarity_Free(s2);
+      return result;
+    }
+  }
 
-   Clarity_Free(psfFT); Clarity_Free(iPtr);
-   Clarity_Free(s1); Clarity_Free(s2);
+  Clarity_Free(psfFT); Clarity_Free(iPtr);
+  Clarity_Free(s1); Clarity_Free(s2);
 
-   return result;
+  return result;
 }
 
 #ifdef BUILD_WITH_CUDA
@@ -163,94 +160,94 @@ Clarity_MaximumLikelihoodDeconvolveCPU(
 
 ClarityResult_t 
 Clarity_MaximumLikelihoodDeconvolveGPU(
-   float* outImage, float* inImage, float* psfImage, 
-   int nx, int ny, int nz, unsigned iterations) {
+  float* outImage, float* inImage, float* psfImage, 
+  int nx, int ny, int nz, unsigned iterations) {
 
-   ClarityResult_t result = CLARITY_SUCCESS;
+  ClarityResult_t result = CLARITY_SUCCESS;
 
-   // Copy over PSF and take its Fourier transform.
-   float* psf = NULL;
-   result = Clarity_Real_MallocCopy((void**) &psf, sizeof(float), 
-      nx, ny, nz, psfImage);
-   if (result != CLARITY_SUCCESS) {
-      return result;
-   }
-   float* psfFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psf);
-      return result;
-   }
-   result = Clarity_FFT_R2C_float(nx, ny, nz, psf, psfFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psf); Clarity_Free(psfFT);
-      return result;
-   }
-   Clarity_Free(psf);
+  // Copy over PSF and take its Fourier transform.
+  float* psf = NULL;
+  result = Clarity_Real_MallocCopy((void**) &psf, sizeof(float), 
+                                   nx, ny, nz, psfImage);
+  if (result != CLARITY_SUCCESS) {
+    return result;
+  }
+  float* psfFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float), 
+                                  nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psf);
+    return result;
+  }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, psf, psfFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psf); Clarity_Free(psfFT);
+    return result;
+  }
+  Clarity_Free(psf);
 
-   // Copy over image.
-   float* in = NULL;
-   result = Clarity_Real_MallocCopy((void**) &in, sizeof(float), 
-      nx, ny, nz, inImage);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT);
-      return result;
-   }
+  // Copy over image.
+  float* in = NULL;
+  result = Clarity_Real_MallocCopy((void**) &in, sizeof(float), 
+                                   nx, ny, nz, inImage);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT);
+    return result;
+  }
 
-   // Set up the array holding the current guess.
-   float* iPtr = NULL;
-   result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(in);
-      return result;
-   }
+  // Set up the array holding the current guess.
+  float* iPtr = NULL;
+  result = Clarity_Real_Malloc((void**)&iPtr, sizeof(float), 
+                               nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT); Clarity_Free(in);
+    return result;
+  }
 
-   // Storage for intermediate arrays
-   float* s1 = NULL;
-   result = Clarity_Real_Malloc((void**)&s1, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr);
-      return result;
-   }
-   float* s2 = NULL;
-   result = Clarity_Real_Malloc((void**)&s2, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr); 
-      Clarity_Free(s1);
-      return result;
-   }
+  // Storage for intermediate arrays
+  float* s1 = NULL;
+  result = Clarity_Real_Malloc((void**)&s1, sizeof(float), 
+                               nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr);
+    return result;
+  }
+  float* s2 = NULL;
+  result = Clarity_Real_Malloc((void**)&s2, sizeof(float), 
+                               nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr); 
+    Clarity_Free(s1);
+    return result;
+  }
 
-   // Compute original energy in the image
-   float energy;
-   Clarity_ReduceSum(&energy, in, nx*ny*nz);
+  // Compute original energy in the image
+  float energy;
+  Clarity_ReduceSum(&energy, in, nx*ny*nz);
 
-   // Iterate
-   for (unsigned k = 0; k < iterations; k++) {
-      float* currentGuess = (k == 0 ? in : iPtr);
-      float* newGuess     = iPtr;
-
-      result = Clarity_MaximumLikelihoodUpdate(nx, ny, nz, 
+  // Iterate
+  for (unsigned k = 0; k < iterations; k++) {
+    float* currentGuess = (k == 0 ? in : iPtr);
+    float* newGuess     = iPtr;
+    
+    result = Clarity_MaximumLikelihoodUpdate(nx, ny, nz, 
          in, energy, currentGuess, psfFT, s1, s2, newGuess);
-      if (result != CLARITY_SUCCESS) {
-         Clarity_Free(psfFT); Clarity_Free(in); 
-         Clarity_Free(iPtr); 
-         Clarity_Free(s1); Clarity_Free(s2);
-         return result;
-      }
-   }
+    if (result != CLARITY_SUCCESS) {
+      Clarity_Free(psfFT); Clarity_Free(in); 
+      Clarity_Free(iPtr); 
+      Clarity_Free(s1); Clarity_Free(s2);
+      return result;
+    }
+  }
 
-   // Copy result from device.
-   result = Clarity_CopyFromDevice(nx, ny, nz, sizeof(float), 
-      outImage, iPtr);
+  // Copy result from device.
+  result = Clarity_CopyFromDevice(nx, ny, nz, sizeof(float), 
+                                  outImage, iPtr);
 
-   Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr);
-   Clarity_Free(s1);    Clarity_Free(s2);
+  Clarity_Free(psfFT); Clarity_Free(in); Clarity_Free(iPtr);
+  Clarity_Free(s1);    Clarity_Free(s2);
 
-   return result;
+  return result;
 }
 
 #endif // BUILD_WITH_CUDA
@@ -263,9 +260,11 @@ Clarity_MaximumLikelihoodDeconvolve(float* inImage, Clarity_Dim3 imageDim,
   
   ClarityResult_t result = CLARITY_SUCCESS;
 
-#ifdef TIME
+#ifdef TIME_TOTAL
+  Stopwatch totalTimer("MaximumLikelihoodDeconvolveTotal");
+  totalTimer.Reset();
   totalTimer.Start();
-#endif
+#endif // TIME_TOTAL
 
   // Compute working dimensions. The working dimensions are the sum of the
   // image and kernel dimensions. This handles the cyclic nature of convolution
@@ -293,34 +292,42 @@ Clarity_MaximumLikelihoodDeconvolve(float* inImage, Clarity_Dim3 imageDim,
   // Allocate output array
   float *outImagePad = (float *) malloc(sizeof(float)*workVoxels);
 
+#ifdef TIME_DECONVOLVE
+  Stopwatch deconvolveTimer("MaximumLikelihoodDeconvolveOnly");
+  deconvolveTimer.Reset();
+  deconvolveTimer.Start();
+#endif // TIME_DECONVOLVE
+
 #ifdef BUILD_WITH_CUDA
-   if (g_CUDACapable) {
-      result = Clarity_MaximumLikelihoodDeconvolveGPU(
+  if (g_CUDACapable) {
+    result = Clarity_MaximumLikelihoodDeconvolveGPU(
          outImagePad, inImagePad, kernelImagePad, 
 	 workDim.x, workDim.y, workDim.z, iterations);
-   } else
+  } else
 #endif // BUILD_WITH_CUDA
-   {
-      result = Clarity_MaximumLikelihoodDeconvolveCPU(
+  {
+    result = Clarity_MaximumLikelihoodDeconvolveCPU(
          outImagePad, inImagePad, kernelImagePad, 
 	 workDim.x, workDim.y, workDim.z, iterations);
-   }
+  }
 
-   // Clip the image to the original dimensions.
-   Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
+#ifdef TIME_DECONVOLVE
+  deconvolveTimer.Stop();
+  std::cout << deconvolveTimer << std::endl;
+#endif // TIME_DECONVOLVE
 
-   // Free up memory.
-   free(inImagePad);
-   free(kernelImagePad);
-   free(outImagePad);
+  // Clip the image to the original dimensions.
+  Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
+  
+  // Free up memory.
+  free(inImagePad);
+  free(kernelImagePad);
+  free(outImagePad);
+  
+#ifdef TIME_TOTAL
+  totalTimer.Stop();
+  std::cout << totalTimer << std::endl;
+#endif // TIME_TOTAL
 
-#ifdef TIME
-   totalTimer.Stop();
-   std::cout << totalTimer << std::endl;
-   std::cout << transferTimer << std::endl;
-   totalTimer.Reset();
-   transferTimer.Reset();
-#endif
-
-   return result;
+  return result;
 }

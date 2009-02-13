@@ -34,12 +34,23 @@
 #include "ComputePrimitives.h"
 #include "ComputePrimitivesGPU.h"
 
+#if defined(TIME_MAP) || defined(TIME_REDUCE)
+#include <iostream>
+#include "Stopwatch.h"
+#endif
+
 extern bool g_CUDACapable;
 
 ClarityResult_t
 Clarity_ReduceSum(float* result, float* buffer, int n) {
    
   ClarityResult_t err = CLARITY_SUCCESS;
+
+#ifdef TIME_REDUCE
+  Stopwatch reduceTimer("ReduceSum");
+  reduceTimer.Reset();
+  reduceTimer.Start();
+#endif // TIME_REDUCE
 
 #ifdef BUILD_WITH_CUDA
   if (g_CUDACapable) {
@@ -55,7 +66,7 @@ Clarity_ReduceSum(float* result, float* buffer, int n) {
       sum += buffer[i];
     }
 
-#else
+#else // __CGNUG__
 #pragma omp parallel for reduction(+:sum)
     for (int i = 0; i < n; i++) {
       sum += buffer[i];
@@ -64,6 +75,11 @@ Clarity_ReduceSum(float* result, float* buffer, int n) {
 
     *result = sum;
   }
+
+#ifdef TIME_REDUCE
+  reduceTimer.Stop();
+  std::cout << reduceTimer << std::endl;
+#endif // TIME_REDUCE
 
   return err;
 }
@@ -74,6 +90,12 @@ Clarity_MultiplyArraysComponentWise(
   float* result, float* a, float* b, int n) {
 
   ClarityResult_t err = CLARITY_SUCCESS;
+
+#ifdef TIME_MAP
+  Stopwatch mapTimer("MultiplyArraysComponentWise");
+  mapTimer.Reset();
+  mapTimer.Start();
+#endif // TIME_MAP
 
 #ifdef BUILD_WITH_CUDA
   if (g_CUDACapable) {
@@ -90,61 +112,88 @@ Clarity_MultiplyArraysComponentWise(
     }
   }
 
+#ifdef TIME_MAP
+  mapTimer.Stop();
+  std::cout << mapTimer << std::endl;
+#endif // TIME_MAP
+
   return err;
 }
 
 
 ClarityResult_t
 Clarity_DivideArraysComponentWise(
-   float* result, float* a, float* b, float value, int n) {
+  float* result, float* a, float* b, float value, int n) {
 
-   ClarityResult_t err = CLARITY_SUCCESS;
+  ClarityResult_t err = CLARITY_SUCCESS;
+
+#ifdef TIME_MAP
+  Stopwatch mapTimer("DivideArraysComponentWise");
+  mapTimer.Reset();
+  mapTimer.Start();
+#endif // TIME_MAP
 
 #ifdef BUILD_WITH_CUDA
-   if (g_CUDACapable) {
-      Clarity_DivideArraysComponentWiseGPU(result, a, b, value, n);
-   } else
+  if (g_CUDACapable) {
+    Clarity_DivideArraysComponentWiseGPU(result, a, b, value, n);
+  } else
 #endif // BUILD_WITH_CUDA
-   {
+  {
 
 #ifdef BUILD_WITH_OPENMP
 #pragma omp parallel for
 #endif // BUILD_WITH_OPENMP
-      for (int i = 0; i < n; i++) {
-         if (fabs(b[i]) < 1e-5) {
-            result[i] = value;
-         } else {
-            result[i] = a[i] / b[i];
-         }
+    for (int i = 0; i < n; i++) {
+      if (fabs(b[i]) < 1e-5) {
+        result[i] = value;
+      } else {
+        result[i] = a[i] / b[i];
       }
-   }
+    }
+  }
 
-   return err;
+#ifdef TIME_MAP
+  mapTimer.Stop();
+  std::cout << mapTimer << std::endl;
+#endif // TIME_MAP
+
+  return err;
 }
 
 
 ClarityResult_t
 Clarity_ScaleArray(
-   float* result, float* a, int n, float scale) {
+  float* result, float* a, int n, float scale) {
 
-   ClarityResult_t err = CLARITY_SUCCESS;
+  ClarityResult_t err = CLARITY_SUCCESS;
+
+#ifdef TIME_MAP
+  Stopwatch mapTimer("ScaleArray");
+  mapTimer.Reset();
+  mapTimer.Start();
+#endif // TIME_MAP
 
 #ifdef BUILD_WITH_CUDA
-   if (g_CUDACapable) {
-      Clarity_ScaleArrayGPU(result, a, n, scale);
-   } else
+  if (g_CUDACapable) {
+    Clarity_ScaleArrayGPU(result, a, n, scale);
+  } else
 #endif // BUILD_WITH_CUDA
-   {
+  {
 
 #ifdef BUILD_WITH_OPENMP
 #pragma omp parallel for
 #endif // BUILD_WITH_OPENMP
-      for (int i = 0; i < n; i++) {
-         result[i] = scale * a[i];
-      }
-   }
+    for (int i = 0; i < n; i++) {
+      result[i] = scale * a[i];
+    }
+  }
 
-   return err;
+#ifdef TIME_MAP
+  mapTimer.Stop();
+  std::cout << mapTimer << std::endl;
+#endif // TIME_MAP
+
+  return err;
 }
 
 

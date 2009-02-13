@@ -33,18 +33,15 @@
 
 extern bool g_CUDACapable;
 
-#ifdef TIME
+#if defined(TIME_MAP)
 #include <iostream>
 #include "Stopwatch.h"
-
-static Stopwatch totalTimer("Convolve (total time)");
-static Stopwatch transferTimer("Convolve filter (transfer time)");
 #endif
 
 ClarityResult_t
-Clarity_Convolve( float* inImage, Clarity_Dim3 imageDim,
-		  float* kernel, Clarity_Dim3 kernelDim,
-		  float* outImage) {
+Clarity_Convolve(float* inImage, Clarity_Dim3 imageDim,
+                 float* kernel, Clarity_Dim3 kernelDim,
+                 float* outImage) {
 
   // Compute working dimensions. The working dimensions are the sum of the
   // image and kernel dimensions. This handles the cyclic nature of convolution
@@ -72,128 +69,118 @@ Clarity_Convolve( float* inImage, Clarity_Dim3 imageDim,
   // Allocate output array
   float *outImagePad = (float *) malloc(sizeof(float)*workVoxels);
 
-#ifdef TIME
-   totalTimer.Start();
-#endif
-   ClarityResult_t result = CLARITY_SUCCESS;
+  ClarityResult_t result = CLARITY_SUCCESS;
 
    // Copy over the input image and PSF.
 #ifdef BUILD_WITH_CUDA
-   if (g_CUDACapable) {
-      float* in;
-      float* psf;
+  if (g_CUDACapable) {
+    float* in;
+    float* psf;
       
-      result = Clarity_Real_MallocCopy((void**) &in, sizeof(float), 
-         workDim.x, workDim.y, workDim.z, inImagePad);
-      if (result != CLARITY_SUCCESS) {
-         return result;
-      }
-      result = Clarity_Real_MallocCopy((void **) &psf, 
-         sizeof(float), workDim.x, workDim.y, workDim.z, kernelPad);
-      if (result != CLARITY_SUCCESS) {
-         Clarity_Free(in);
-         return result;
-      }
-      Clarity_ConvolveInternal(workDim.x, workDim.y, workDim.z, in, psf, in);
-      result = Clarity_CopyFromDevice(workDim.x, workDim.y, workDim.z, 
-				      sizeof(float), outImagePad, in);
-      Clarity_Free(in); Clarity_Free(psf);
-
-   } else 
+    result = Clarity_Real_MallocCopy
+      ((void**) &in, sizeof(float), workDim.x, workDim.y, workDim.z,
+       inImagePad);
+    if (result != CLARITY_SUCCESS) {
+      return result;
+    }
+    result = Clarity_Real_MallocCopy
+      ((void **) &psf, sizeof(float), workDim.x, workDim.y, workDim.z,
+       kernelPad);
+    if (result != CLARITY_SUCCESS) {
+      Clarity_Free(in);
+      return result;
+    }
+    Clarity_ConvolveInternal(workDim.x, workDim.y, workDim.z, in, psf, in);
+    result = Clarity_CopyFromDevice(workDim.x, workDim.y, workDim.z, 
+                                    sizeof(float), outImagePad, in);
+    Clarity_Free(in); Clarity_Free(psf);
+    
+  } else 
 #endif // BUILD_WITH_CUDA
-   {
+  {
+    Clarity_ConvolveInternal(workDim.x, workDim.y, workDim.z, inImagePad, 
+                             kernelPad, outImagePad);
+  }
 
-      Clarity_ConvolveInternal(workDim.x, workDim.y, workDim.z, inImagePad, 
-			       kernelPad, outImagePad);
-   }
 
+  // Clip the image to the original dimensions.
+  Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
 
-   // Clip the image to the original dimensions.
-   Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
+  // Free up memory
+  free(inImagePad);
+  free(kernelPad);
+  free(outImagePad);
 
-   // Free up memory
-   free(inImagePad);
-   free(kernelPad);
-   free(outImagePad);
-
-#ifdef TIME
-   totalTimer.Stop();
-   std::cout << totalTimer << std::endl;
-   std::cout << transferTimer << std::endl;
-   totalTimer.Reset();
-   transferTimer.Reset();
-#endif
-
-   return result;
+  return result;
 }
 
 
 ClarityResult_t
 Clarity_Convolve_OTF(
-   int nx, int ny, int nz, float* in, float* otf, float* out) {
+  int nx, int ny, int nz, float* in, float* otf, float* out) {
 
-   ClarityResult_t result = CLARITY_SUCCESS;
+  ClarityResult_t result = CLARITY_SUCCESS;
 
-   float* inFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), 
-      nx, ny, nz);
-   if (result == CLARITY_OUT_OF_MEMORY) {
-      return result;
-   }
+  float* inFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), 
+                                  nx, ny, nz);
+  if (result == CLARITY_OUT_OF_MEMORY) {
+    return result;
+  }
 
-   result = Clarity_FFT_R2C_float(nx, ny, nz, in, inFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(inFT);
-      return result;
-   }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, in, inFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(inFT);
+    return result;
+  }
 
-   Clarity_Modulate(nx, ny, nz, inFT, otf, inFT);
+  Clarity_Modulate(nx, ny, nz, inFT, otf, inFT);
 
-   result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, out);
-   Clarity_Free(inFT);
+  result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, out);
+  Clarity_Free(inFT);
 
-   return result;
+  return result;
 }
 
 
 ClarityResult_t
 Clarity_ConvolveInternal(
-   int nx, int ny, int nz, float* in, float* psf, float* out) {
+  int nx, int ny, int nz, float* in, float* psf, float* out) {
 
-   ClarityResult_t result = CLARITY_SUCCESS;
-   float* inFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), 
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) { 
-      return result;
-   }
-   result = Clarity_FFT_R2C_float(nx, ny, nz, in, inFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(inFT);
-      return result;
-   }
+  ClarityResult_t result = CLARITY_SUCCESS;
+  float* inFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &inFT, sizeof(float), 
+                                  nx, ny, nz);
+  if (result != CLARITY_SUCCESS) { 
+    return result;
+  }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, in, inFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(inFT);
+    return result;
+  }
 
-   float* psfFT = NULL;
-   result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float),
-      nx, ny, nz);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(inFT);
-      return result;
-   }
-   result = Clarity_FFT_R2C_float(nx, ny, nz, psf, psfFT);
-   if (result != CLARITY_SUCCESS) {
-      Clarity_Free(inFT); Clarity_Free(psfFT);
-      return result;
-   }
+  float* psfFT = NULL;
+  result = Clarity_Complex_Malloc((void**) &psfFT, sizeof(float),
+                                  nx, ny, nz);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(inFT);
+    return result;
+  }
+  result = Clarity_FFT_R2C_float(nx, ny, nz, psf, psfFT);
+  if (result != CLARITY_SUCCESS) {
+    Clarity_Free(inFT); Clarity_Free(psfFT);
+    return result;
+  }
 
-   // Modulate the two transforms
-   Clarity_Modulate(nx, ny, nz, inFT, psfFT, inFT);
-   Clarity_Free(psfFT);
+  // Modulate the two transforms
+  Clarity_Modulate(nx, ny, nz, inFT, psfFT, inFT);
+  Clarity_Free(psfFT);
+  
+  result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, out);
+  Clarity_Free(inFT);
 
-   result = Clarity_FFT_C2R_float(nx, ny, nz, inFT, out);
-   Clarity_Free(inFT);
-
-   return result;
+  return result;
 }
 
 
@@ -201,32 +188,44 @@ Clarity_ConvolveInternal(
 extern "C"
 void
 Clarity_Modulate_KernelGPU(
-   int nx, int ny, int nz, float* inFT, float* otf, float* outFT);
+  int nx, int ny, int nz, float* inFT, float* otf, float* outFT);
 #endif
 
 
 void
 Clarity_Modulate_KernelCPU(
-   int nx, int ny, int nz, float* inFT, float* otf, float* outFT) {
-   int numVoxels = nz*ny*(nx/2 + 1);
-   float scale = 1.0f / ((float) nz*ny*nx);
+  int nx, int ny, int nz, float* inFT, float* otf, float* outFT) {
+  int numVoxels = nz*ny*(nx/2 + 1);
+  float scale = 1.0f / ((float) nz*ny*nx);
+
 #pragma omp parallel for
-   for (int i = 0; i < numVoxels; i++) {
-      ComplexMultiplyAndScale(inFT + (2*i), otf + (2*i), scale, outFT + (2*i));
-   }
+  for (int i = 0; i < numVoxels; i++) {
+    ComplexMultiplyAndScale(inFT + (2*i), otf + (2*i), scale, outFT + (2*i));
+  }
 }
 
 
 void
 Clarity_Modulate(
-   int nx, int ny, int nz, float* in, float* otf, float* out) {
+  int nx, int ny, int nz, float* in, float* otf, float* out) {
+
+#ifdef TIME_MAP
+  Stopwatch mapTimer("Modulate");
+  mapTimer.Reset();
+  mapTimer.Start();
+#endif // TIME_MAP
 
 #ifdef BUILD_WITH_CUDA
-   if (g_CUDACapable) {
-      Clarity_Modulate_KernelGPU(nx, ny, nz, in, otf, out);
-   } else
+  if (g_CUDACapable) {
+    Clarity_Modulate_KernelGPU(nx, ny, nz, in, otf, out);
+  } else
 #endif // BUILD_WITH_CUDA
-   {
-      Clarity_Modulate_KernelCPU(nx, ny, nz, in, otf, out);
-   }
+  {
+    Clarity_Modulate_KernelCPU(nx, ny, nz, in, otf, out);
+  }
+
+#ifdef TIME_MAP
+  mapTimer.Stop();
+  std::cout << mapTimer << std::endl;
+#endif // TIME_MAP
 }

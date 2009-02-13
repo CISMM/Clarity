@@ -49,7 +49,13 @@ Clarity_Register() {
 
 #ifdef BUILD_WITH_OPENMP
       int np = omp_get_num_procs();
+      char *npString = getenv("CLARITY_NP");
+      if (npString) {
+	np = atoi(npString);
+      }
+
       Clarity_SetNumberOfThreads(np);
+      printf("Clarity initialized with %d threads.\n", np);
 #endif // BUILD_WITH_OPENMP
 
 #ifdef BUILD_WITH_CUDA

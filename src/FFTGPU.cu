@@ -27,8 +27,33 @@
 
 #include "ComplexCUDA.h"
 
-#define BLOCKS 16
-#define THREADS_PER_BLOCK 128
+#define DEFAULT_BLOCKS 64
+#define DEFAULT_THREADS_PER_BLOCK 128
+
+#define CLARITY_MODULATE_BLOCKS_ENV            "CLARITY_MODULATE__BLOCKS"
+#define CLARITY_MODULATE_THREADS_PER_BLOCK_ENV "CLARITY_MODULATE_THREADS_PER_BLOCK"
+
+int getModulateBlocks() {
+  int numBlocks = DEFAULT_BLOCKS;
+  char *blockString = getenv(CLARITY_MODULATE_BLOCKS_ENV);
+  if (blockString) {
+    numBlocks = atoi(blockString);
+  }
+
+  return numBlocks;
+}
+
+
+int getModulateThreadsPerBlock() {
+  int numThreadsPerBlock = DEFAULT_THREADS_PER_BLOCK;
+  char *threadsPerBlockString = getenv(CLARITY_MODULATE_THREADS_PER_BLOCK_ENV);
+  if (threadsPerBlockString) {
+    numThreadsPerBlock = atoi(threadsPerBlockString);
+  }
+
+  return numThreadsPerBlock;
+}
+
 
 
 __global__ void ModulateCUDAKernel(int n, float scale, Complex* inFT, Complex* psfFT, Complex* outFT) {
@@ -36,7 +61,8 @@ __global__ void ModulateCUDAKernel(int n, float scale, Complex* inFT, Complex* p
    const int threadN = __mul24(blockDim.x, gridDim.x);
 
    for (int voxelID = tid; voxelID < n; voxelID += threadN) {
-      outFT[voxelID] = ComplexMultiplyAndScale(inFT[voxelID], psfFT[voxelID], scale);
+      outFT[voxelID] = ComplexMultiplyAndScale(inFT[voxelID], psfFT[voxelID],
+					       scale);
    }
 
 }
@@ -47,12 +73,12 @@ void
 Clarity_Modulate_KernelGPU(int nx, int ny, int nz, float* inFT,
                            float* psfFT, float* outFT) {
    int n = nz*ny*(nx/2 + 1);
-   dim3 grid(BLOCKS);
-   dim3 block(THREADS_PER_BLOCK);
+   dim3 grid(getModulateBlocks());
+   dim3 block(getModulateThreadsPerBlock());
    float scale = 1.0f / ((float) nx*ny*nz);
 
-   ModulateCUDAKernel<<<grid, block>>>(n, scale, (Complex*)inFT, 
-      (Complex*)psfFT, (Complex*)outFT);
+   ModulateCUDAKernel<<<grid, block>>>(n, scale, (Complex *) inFT, 
+				       (Complex *) psfFT, (Complex *) outFT);
 
    cudaError result = cudaThreadSynchronize();
    if (result != cudaSuccess) {

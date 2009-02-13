@@ -37,12 +37,9 @@
 
 extern bool g_CUDACapable;
 
-#ifdef TIME
+#if defined(TIME_TOTAL) || defined(TIME_DECONVOLVE) || defined(TIME_MAP)
 #include <iostream>
 #include "Stopwatch.h"
-
-static Stopwatch totalTimer("JansenVanCittert filter (total time)");
-static Stopwatch transferTimer("JansenVanCittert filter (transfer time)");
 #endif
 
 float
@@ -95,6 +92,12 @@ JansenVanCittertDeconvolveKernelCPU(
    int nx, int ny, int nz, float* in, float inMax, float invMaxSq,
    float* i_k, float* o_k, float* i_kNext) {
 
+#ifdef TIME_MAP
+  Stopwatch kernelTimer("JansenVanCittertDeconvolveKernelCPU");
+  kernelTimer.Reset();
+  kernelTimer.Start();
+#endif // TIME_MAP
+
    int numVoxels = nx*ny*nz;
 
 #ifdef BUILD_WITH_OPENMP
@@ -107,6 +110,11 @@ JansenVanCittertDeconvolveKernelCPU(
       if (val < 0.0f) val = 0.0f;
       i_kNext[j] = val;
    }
+
+#ifdef TIME_MAP
+   kernelTimer.Stop();
+   std::cout << kernelTimer << std::endl;
+#endif // TIME_MAP
 
 }
 
@@ -261,8 +269,20 @@ Clarity_JansenVanCittertDeconvolveGPU(
       if (result != CLARITY_SUCCESS) {
          break;
       }
+
+#ifdef TIME_MAP
+      Stopwatch kernelTimer("JansenVanCittertDeconvolveKernelGPU");
+      kernelTimer.Reset();
+      kernelTimer.Start();
+#endif // TIME_MAP
+
       JansenVanCittertDeconvolveKernelGPU(nx, ny, nz, in, A, 
          invASq, iPtr, oPtr, iPtr);
+
+#ifdef TIME_MAP
+      kernelTimer.Stop();
+      std::cout << kernelTimer << std::endl;
+#endif // TIME_MAP
    }
 
    // Copy result from device.
@@ -283,9 +303,11 @@ Clarity_JansenVanCittertDeconvolve(float* inImage, Clarity_Dim3 imageDim,
 				   float* outImage, int iterations) {
   ClarityResult_t result = CLARITY_SUCCESS;
 
-#ifdef TIME
+#ifdef TIME_TOTAL
+  Stopwatch totalTimer("JansenVanCittertDeconvolveTotal");
+  totalTimer.Reset();
   totalTimer.Start();
-#endif
+#endif // TIME_TOTAL
 
   // Find maximum value in the input image.
   float max = Clarity_GetImageMax(inImage, imageDim.x*imageDim.y*imageDim.z);
@@ -316,6 +338,11 @@ Clarity_JansenVanCittertDeconvolve(float* inImage, Clarity_Dim3 imageDim,
   // Allocate output array
   float *outImagePad = (float *) malloc(sizeof(float)*workVoxels);
   
+#ifdef TIME_DECONVOLVE
+  Stopwatch deconvolveTimer("JansenVanCittertDeconvolveOnly");
+  deconvolveTimer.Start();
+#endif // TIME_DECONVOLVE
+
 #ifdef BUILD_WITH_CUDA
   if (g_CUDACapable) {
     result = Clarity_JansenVanCittertDeconvolveGPU(outImagePad, 
@@ -329,6 +356,11 @@ Clarity_JansenVanCittertDeconvolve(float* inImage, Clarity_Dim3 imageDim,
       max, iterations);
   }
 
+#ifdef TIME_DECONVOLVE
+   deconvolveTimer.Stop();
+   std::cout << deconvolveTimer << std::endl;
+#endif // TIME_DECONVOLVE
+
   // Clip the image to the original dimensions.
   Clarity_ImageClip(outImage, imageDim, outImagePad, workDim);
 
@@ -337,13 +369,10 @@ Clarity_JansenVanCittertDeconvolve(float* inImage, Clarity_Dim3 imageDim,
   free(kernelImagePad);
   free(outImagePad);
 
-#ifdef TIME
+#ifdef TIME_TOTAL
   totalTimer.Stop();
   std::cout << totalTimer << std::endl;
-  std::cout << transferTimer << std::endl;
-  totalTimer.Reset();
-  transferTimer.Reset();
-#endif
+#endif // TIME_TOTAL
 
   return result;
 }

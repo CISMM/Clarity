@@ -24,10 +24,15 @@
 
 #include <stdio.h>
 
-#define BLOCKS 16
-#define THREADS_PER_BLOCK 128
+#define DEFAULT_BLOCKS 64
+#define DEFAULT_THREADS_PER_BLOCK 128
+
+
 
 #include "JansenVanCittertDeconvolveGPU.h"
+
+extern int getStreamBlocks();
+extern int getStreamThreadsPerBlock();
 
 
 __global__
@@ -36,8 +41,8 @@ JansenVanCittertCUDAKernel(
    int n, float* in, float inMax, float invMaxSq, float* i_k,
    float* o_k, float* i_kNext) {
 
-   const int tid     = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
-   const int threadN = __mul24(blockDim.x, gridDim.x);
+   const int tid     = blockIdx.x*blockDim.x + threadIdx.x;
+   const int threadN = blockDim.x*gridDim.x;
 
    for (int j = tid; j < n; j += threadN) {
       float diff = o_k[j] - inMax;
@@ -55,8 +60,8 @@ JansenVanCittertDeconvolveKernelGPU(
    float* i_k, float* o_k, float* i_kNext) {
 
    int n = nz*ny*nx;
-   dim3 grid(BLOCKS);
-   dim3 block(THREADS_PER_BLOCK);
+   dim3 grid(getStreamBlocks());
+   dim3 block(getStreamThreadsPerBlock());
 
    JansenVanCittertCUDAKernel<<<grid, block>>>(n, in, inMax, invMaxSq, 
       i_k, o_k, i_kNext);
