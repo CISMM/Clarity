@@ -1,3 +1,7 @@
+2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitives.h, Memory.h: Added missing include files.
+
 2008-12-15  Cory Quammen <cquammen@cs.unc.edu>
 
    * ComputePrimitives.h: Added array (image) normalization function.

@@ -27,6 +27,8 @@
 
 #include <cstring>
 
+#include "Memory.h"
+
 /**
  * Allocates a 3D complex-valued image of given size.
  * 
