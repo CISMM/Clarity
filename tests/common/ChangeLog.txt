@@ -1,3 +1,8 @@
+2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Test_Common.h: Changed some names to be less microscopy specific. Added
+   the ability to set image test sizes through environment variables.
+
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
    * Test_Common.h: Added licensing to top of the file.   

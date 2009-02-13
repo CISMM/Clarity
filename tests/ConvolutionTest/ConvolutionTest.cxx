@@ -23,11 +23,11 @@
 
 
 #include <cstdio>
+#include <iostream>
 
 #include "Clarity.h"
 
 #include "../common/Test_Common.h"
-
 
 int main(int argc, char* argv[]) {
   float *inputImage, *kernelImage;
@@ -53,6 +53,10 @@ int main(int argc, char* argv[]) {
   // We'll create test data here by convolving the input image with the PSF.
   float *convolvedImage = 
     (float *) malloc(sizeof(float)*imageDims.x*imageDims.y*imageDims.z);
+
+  Clarity_Convolve(inputImage, imageDims, kernelImage, kernelDims,
+		   convolvedImage);
+
   Clarity_Convolve(inputImage, imageDims, kernelImage, kernelDims,
 		   convolvedImage);
 

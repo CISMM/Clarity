@@ -33,9 +33,58 @@
 #define IMG_Y 128
 #define IMG_Z 32
 
-#define PSF_X 32
-#define PSF_Y 32
-#define PSF_Z 32
+#define KERNEL_X 32
+#define KERNEL_Y 32
+#define KERNEL_Z 32
+
+
+/** Determines the size of the image used in the tests.
+ *
+ * Attempts to read environment variables to determine image size. If one of
+ * the environment variables does not exist, the default image size is
+ * returned. Environment variables affecting this function are:
+ * CLARITY_IMAGE_SIZE_X, CLARITY_IMAGE_SIZE_Y, and CLARITY_IMAGE_SIZE_Z.
+ */
+void getImageSize(Clarity_Dim3 *imageDims) {
+  imageDims->x = IMG_X;
+  imageDims->y = IMG_Y;
+  imageDims->z = IMG_Z;
+
+  char *xDimString = getenv("CLARITY_IMAGE_SIZE_X");
+  char *yDimString = getenv("CLARITY_IMAGE_SIZE_Y");
+  char *zDimString = getenv("CLARITY_IMAGE_SIZE_Z");
+  if (xDimString && yDimString && zDimString) {
+    imageDims->x = atoi(xDimString);
+    imageDims->y = atoi(yDimString);
+    imageDims->z = atoi(zDimString);
+  }
+
+}
+
+
+/** Determines the size of the convolution kernel used in the tests.
+ *
+ * Attempts to read environment variables to determine kernel size. If one of
+ * the environment variables does not exist, the default kernel size is
+ * returned. Environment variables affecting this function are:
+ * CLARITY_KERNEL_SIZE_X, CLARITY_KERNEL_SIZE_Y, and CLARITY_KERNEL_SIZE_Z.
+ */
+void getKernelSize(Clarity_Dim3 *kernelDims) {
+  kernelDims->x = KERNEL_X;
+  kernelDims->y = KERNEL_Y;
+  kernelDims->z = KERNEL_Z;
+
+  char *xDimString = getenv("CLARITY_KERNEL_SIZE_X");
+  char *yDimString = getenv("CLARITY_KERNEL_SIZE_Y");
+  char *zDimString = getenv("CLARITY_KERNEL_SIZE_Z");
+  if (xDimString && yDimString && zDimString) {
+    kernelDims->x = atoi(xDimString);
+    kernelDims->y = atoi(yDimString);
+    kernelDims->z = atoi(zDimString);
+  }
+
+}
+
 
 /**
  * Generates image representing the true signal.
@@ -46,7 +95,7 @@
  */
 float *
 Test_GenerateTrueImage(Clarity_Dim3 *dim) {
-  dim->x = IMG_X;  dim->y = IMG_Y;  dim->z = IMG_Z;
+  getImageSize(dim);
 
   float *image = (float *) malloc(sizeof(float)*dim->x*dim->y*dim->z);
 
@@ -55,10 +104,10 @@ Test_GenerateTrueImage(Clarity_Dim3 *dim) {
     image[i] = 0.0f;
   }
 
-  for (int iz = IMG_Z/4; iz < IMG_Z - (IMG_Z/4); iz++) {
-    for (int iy = IMG_Y/4; iy < IMG_Y - IMG_Y/4; iy++) {
-      for (int ix = IMG_X/4; ix < IMG_X - IMG_X/4; ix++) {
-        image[iz*IMG_X*IMG_Y + iy*IMG_X + ix] = 1.0f;
+  for (int iz = dim->z/4; iz < dim->z - (dim->z/4); iz++) {
+    for (int iy = dim->y/4; iy < dim->y - (dim->y/4); iy++) {
+      for (int ix = dim->x/4; ix < dim->x - (dim->x/4); ix++) {
+        image[iz*dim->x*dim->y + iy*dim->x + ix] = 1.0f;
       }
     }
   }
@@ -77,22 +126,22 @@ Test_GenerateTrueImage(Clarity_Dim3 *dim) {
  */
 float *
 Test_GenerateGaussianKernel(Clarity_Dim3 *dim, float sigma) {
-  dim->x = PSF_X;  dim->y = PSF_Y;  dim->z = PSF_Z;
+  getKernelSize(dim);
 
   float *kernel = (float *) malloc(sizeof(float)*dim->x*dim->y*dim->z);
 
   float sum = 0.0f;
   float sigma2 = sigma*sigma;
-  for (int iz = 0; iz < PSF_Z; iz++) {
-    float fz = static_cast<float>(iz-(PSF_Z/2));
-    for (int iy = 0; iy < PSF_Y; iy++) {
-      float fy = static_cast<float>(iy-(PSF_Y/2));
-      for (int ix = 0; ix < PSF_X; ix++) {
-        float fx = static_cast<float>(ix-(PSF_X/2));
+  for (int iz = 0; iz < dim->z; iz++) {
+    float fz = static_cast<float>(iz-(dim->z/2));
+    for (int iy = 0; iy < dim->y; iy++) {
+      float fy = static_cast<float>(iy-(dim->y/2));
+      for (int ix = 0; ix < dim->x; ix++) {
+        float fx = static_cast<float>(ix-(dim->x/2));
 	float value =
           (1.0f / pow(2.0*M_PI*sigma2, 1.5)) *
           exp(-((fx*fx + fy*fy + fz*fz)/(2*sigma2)));
-        kernel[(iz*PSF_X*PSF_Y) + (iy*PSF_X) + ix] = value;
+        kernel[(iz*dim->x*dim->y) + (iy*dim->x) + ix] = value;
 	sum += value;
       }
     }
@@ -100,7 +149,7 @@ Test_GenerateGaussianKernel(Clarity_Dim3 *dim, float sigma) {
 
   // Normalize the kernel
   float div = 1.0f / sum;
-  for (int i = 0; i < PSF_X*PSF_Y*PSF_Z; i++) {
+  for (int i = 0; i < dim->x*dim->y*dim->z; i++) {
     kernel[i] *= div;
   }
 

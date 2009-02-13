@@ -1,3 +1,7 @@
+2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ConvolutionTest.cxx: Added actual call to Clarity_Convolve.
+
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Removed unnecessary link libraries.
