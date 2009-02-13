@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 
   // Now we are ready to apply a deconvolution algorithm. We'll try the
   // maximum likelihood algorithm.
-  int iterations = 5;
+  int iterations = 10;
   Clarity_BlindMaximumLikelihoodDeconvolve(convolvedImage, imageDims,
     kernelImage, kernelDims, deconvolvedImage, iterations);
 
