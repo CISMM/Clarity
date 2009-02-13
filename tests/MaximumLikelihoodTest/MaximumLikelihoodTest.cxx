@@ -17,7 +17,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. You can also find 
  * the GPL on the GNU web site (http://www.gnu.org/copyleft/gpl.html).
  *
- * File name: Memory.h
+ * File name: MaximumLikelihoodTest.cxx
  * Author: Cory Quammen <cquammen@cs.unc.edu>
  */
 
@@ -37,6 +37,11 @@ int main(int argc, char* argv[]) {
   // Initialize image data arrays.
   inputImage  = Test_GenerateTrueImage(&imageDims);
   kernelImage = Test_GenerateGaussianKernel(&kernelDims, 3.0f);
+
+  printf("Image dimensions: (%d, %d, %d)\n", 
+	 imageDims.x, imageDims.y, imageDims.z);
+  printf("Kernel dimensions: (%d, %d, %d)\n",
+	 kernelDims.x, kernelDims.y, kernelDims.z);
 
   // Write image and PSF to files.
   FILE *fp = fopen("image_f32.raw", "wb");
@@ -68,9 +73,12 @@ int main(int argc, char* argv[]) {
   // Now we are ready to apply a deconvolution algorithm. We'll try the
   // maximum likelihood algorithm.
   int iterations = 10;
-  Clarity_MaximumLikelihoodDeconvolve(convolvedImage, imageDims,
-				      kernelImage, kernelDims,
-				      deconvolvedImage, iterations);
+  printf("MaximumLikelihood iterations: %d\n", iterations);
+  for (int i = 0; i < 10; i++) {
+    Clarity_MaximumLikelihoodDeconvolve(convolvedImage, imageDims,
+					kernelImage, kernelDims,
+					deconvolvedImage, iterations);
+  }
 
   // Write out deconvolved image.
   fp = fopen("deconvolved_f32.raw", "wb");
