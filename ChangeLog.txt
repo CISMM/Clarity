@@ -1,3 +1,7 @@
+2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Fixed conditional on use of GOMP (GNU OpenMP library).
+
 2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
 
    * HOWTO-Build-Clarity.txt: Updated instructions to include building FFTW
