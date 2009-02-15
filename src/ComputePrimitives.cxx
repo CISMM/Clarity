@@ -61,17 +61,14 @@ Clarity_ReduceSum(float* result, float* buffer, int n) {
     float sum = 0.0f;
     // OpenMP in GCC is buggy with reductions, so we'll handle the reduction
     // serially.
-#if not defined(BUILD_WITH_OPENMP) or defined(__GNUG__)
-    for (int i = 0; i < n; i++) {
-      sum += buffer[i];
-    }
-
-#else // __CGNUG__
+#if defined(BUILD_WITH_OPENMP)
+#if defined(__INTEL_COMPILER)
 #pragma omp parallel for reduction(+:sum)
+#endif // __INTEL_COMPILER
+#endif // BUILD_WITH_OPENMP
     for (int i = 0; i < n; i++) {
       sum += buffer[i];
     }
-#endif // __GNUG__
 
     *result = sum;
   }

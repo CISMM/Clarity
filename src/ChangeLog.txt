@@ -1,3 +1,13 @@
+2009-02-15  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitives.cxx: Removed check for __GNUG__ when deciding whether
+   to use a OpenMP reduction (gcc's implementation of OMP reduction is
+   buggy). It turns out the Intel compiler defines this as well, so it wasn't
+   parallelizing this reduction. I've replaced it with a check for the
+   symbol definition __INTEL_COMPILER which works for my purposes at the
+   moment. Will need to change this to a version check of gcc when the
+   buggy reduction is fixed.
+
 2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
 
    * ComputePrimitivesGPU.cu, JansenVanCittertDeconvolveGPU.cu,
