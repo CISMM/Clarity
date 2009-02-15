@@ -4,6 +4,12 @@ PROJECT(Clarity)
 OPTION(BUILD_SHARED_LIBS "Build Clarity with shared libraries." ON)
 OPTION(BUILD_WITH_OPENMP "Build with OpenMP." ON)
 OPTION(BUILD_WITH_CUDA "Build with CUDA FFT acceleration." OFF)
+OPTION(TIME_MAP "Time mapping operations." OFF)
+OPTION(TIME_REDUCE "Time reduction operations." OFF)
+OPTION(TIME_TRANSFER "Time data transfer to/from GPU." OFF)
+OPTION(TIME_FFT "Time FFT forward and inverse operations." OFF)
+OPTION(TIME_DECONVOLVE "Time deconvolution operation only." OFF)
+OPTION(TIME_TOTAL "Time total deconvolution operation (includes image padding and clipping." OFF)
 
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/")
 
@@ -15,7 +21,7 @@ ENDIF(BUILD_WITH_CUDA)
 FIND_PACKAGE(FFTW)
 
 SET(Clarity_MAJOR_VERSION "1")
-SET(Clarity_MINOR_VERSION "0")
+SET(Clarity_MINOR_VERSION "1")
 SET(Clarity_BUILD_VERSION "0")
 
 SET( Clarity_VERSION_FLAT "${Clarity_MAJOR_VERSION}${Clarity_MINOR_VERSION}${Clarity_BUILD_VERSION}" )

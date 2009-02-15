@@ -1,3 +1,11 @@
+2009-02-15  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added configuration options for enabling timing.
+   Bumped up version number to 1.1.
+
+   * Clarity.h.in: Moved contents of include/Clarity.h to here. This eliminates
+   two header files named Clarity.h, which was terribly confusing.
+
 2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Fixed conditional on use of GOMP (GNU OpenMP library).
