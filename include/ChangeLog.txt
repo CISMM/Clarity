@@ -1,3 +1,8 @@
+2009-02-15  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Moved the contents of this file to Clarity.h.in at the top
+   level of this project and removed this file because it is no longer needed.
+
 2008-12-15  Cory Quammen <cquammen@cs.unc.edu>
 
    * Clarity.h: Changed parameters to Clarity_BlindMaximumLikelihoodDeconvolve
