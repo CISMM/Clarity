@@ -25,7 +25,7 @@
 #ifndef __COMPUTE_PRIMITIVES_H_
 #define __COMPUTE_PRIMITIVES_H_
 
-#include "../Clarity.h"
+#include "Clarity.h"
 
 /**
  * Sums the elements of an array.
