@@ -37,6 +37,9 @@
 #define KERNEL_Y 32
 #define KERNEL_Z 32
 
+#ifndef M_PI
+#define M_PI 3.14159265
+#endif
 
 /** Determines the size of the image used in the tests.
  *

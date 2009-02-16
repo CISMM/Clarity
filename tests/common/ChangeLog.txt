@@ -1,3 +1,8 @@
+2009-02-15  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Test_Common.h: Added definition of M_PI (not defined in
+   Windows).
+
 2009-02-13  Cory Quammen <cquammen@cs.unc.edu>
 
    * Test_Common.h: Changed some names to be less microscopy specific. Added
