@@ -260,8 +260,20 @@ Clarity_JansenVanCittertDeconvolveGPU(
       Clarity_Free(iPtr); Clarity_Free(oPtr);
       return result;
    }
+
+#ifdef TIME_MAP
+   Stopwatch kernelTimer("JansenVanCittertDeconvolveKernelGPU");
+   kernelTimer.Reset();
+   kernelTimer.Start();
+#endif // TIME_MAP
+
    JansenVanCittertDeconvolveKernelGPU(nx, ny, nz, in, A, invASq, 
       in, oPtr, iPtr);
+
+#ifdef TIME_MAP
+   kernelTimer.Stop();
+   std::cout << kernelTimer << std::endl;
+#endif // TIME_MAP
 
    // Iterate
    for (unsigned k = 1; k < iterations; k++) {
@@ -271,7 +283,6 @@ Clarity_JansenVanCittertDeconvolveGPU(
       }
 
 #ifdef TIME_MAP
-      Stopwatch kernelTimer("JansenVanCittertDeconvolveKernelGPU");
       kernelTimer.Reset();
       kernelTimer.Start();
 #endif // TIME_MAP

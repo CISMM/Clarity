@@ -1,3 +1,11 @@
+2009-02-16  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitivesGPU.cu, JansenVanCittertDeconvolveGPU.cu:
+   Added error checking after invocation of CUDA kernels.
+
+   * JansenVanCittertDeconvolve.cxx: Added timer around one call to
+   JansenVanCittertDeconvolveKernelGPU that I had missed.
+
 2009-02-15  Cory Quammen <cquammen@cs.unc.edu>
 
    * ComputePrimitives.cxx: Removed check for __GNUG__ when deciding whether

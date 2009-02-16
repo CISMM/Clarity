@@ -66,4 +66,10 @@ JansenVanCittertDeconvolveKernelGPU(
    JansenVanCittertCUDAKernel<<<grid, block>>>(n, in, inMax, invMaxSq, 
       i_k, o_k, i_kNext);
 
+   cudaError error = cudaThreadSynchronize();
+   if (error != cudaSuccess) {
+      fprintf(stderr, "CUDA error: %s in file '%s' in line %i : %s.\n",
+         "JansenVanCittertDeconvolveKernelGPU failed", __FILE__, __LINE__,
+              cudaGetErrorString(error));
+   }
 }

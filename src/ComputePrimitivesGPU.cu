@@ -195,6 +195,14 @@ Clarity_DivideArraysComponentWiseGPU(float* result, float* a, float* b, float va
   
   DivideArraysComponentWiseKernelGPU<<<gridSize, blockSize>>>
     (result, a, b, value, n);
+
+  cudaError error = cudaThreadSynchronize();
+  if (error != cudaSuccess) {
+    fprintf(stderr, "CUDA error: %s in file '%s' in line %i : %s.\n",
+            "Clarity_DivideArraysComponentWiseGPU failed", __FILE__, __LINE__,
+            cudaGetErrorString(error));
+  }
+
 }
 
 
@@ -221,4 +229,11 @@ Clarity_ScaleArrayGPU(float* result, float* a, int n, float scale) {
   
   ScaleArrayKernelGPU<<<gridSize, blockSize>>>
     (result, a, n, scale);
+
+  cudaError error = cudaThreadSynchronize();
+  if (error != cudaSuccess) {
+    fprintf(stderr, "CUDA error: %s in file '%s' in line %i : %s.\n",
+            "Clarity_ScaleArrayGPU failed", __FILE__, __LINE__,
+            cudaGetErrorString(error));
+  }
 }
