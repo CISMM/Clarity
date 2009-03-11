@@ -1,3 +1,8 @@
+2009-03-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added apps subdirectory that contains applications
+   using the Clarity library.
+
 2009-02-15  Cory Quammen <cquammen@cs.unc.edu>
 
    * CMakeLists.txt: Added configuration options for enabling timing.
