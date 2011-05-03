@@ -46,7 +46,7 @@ SET( Clarity_SRCS
   src/ComputePrimitivesGPU.cu
   src/Convolve.cxx
   src/FFT.cxx
-  src/FFTGPU.cu
+  src/ModulateGPU.cu
   src/IDivergenceDeconvolve.cxx
   src/ImageClip.cxx
   src/ImagePadSpatialShift.cxx
