@@ -94,14 +94,7 @@ ADD_SUBDIRECTORY(tests)
 ################################################################
 ## installation of library
 ################################################################
-IF(WIN32)
-  INSTALL(TARGETS
-    Clarity
-    RUNTIME
-    DESTINATION ${CMAKE_INSTALL_PREFIX})
-ELSE(WIN32)
-  INSTALL(TARGETS
-    Clarity
-    LIBRARY
-    DESTINATION ${CMAKE_INSTALL_PREFIX})
-ENDIF(WIN32)
+INSTALL(TARGETS Clarity
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
