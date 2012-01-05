@@ -29,7 +29,7 @@
 
 #include "../common/Test_Common.h"
 
-int main(int argc, char* argv[]) {
+int main(int, char *[]) {
   float *inputImage, *kernelImage;
   Clarity_Dim3 imageDims; // Image dimensions
   Clarity_Dim3 kernelDims; // Kernel dimensions
