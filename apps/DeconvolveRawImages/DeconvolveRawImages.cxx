@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
     if (!psfFp) 
       printf("ERROR: Could not open PSF file '%s'\n'", psfFileName);
     if (!outputFp) 
-      printf("ERROR: Could not open file '%' for writing\n", outputFileName);
+      printf("ERROR: Could not open file '%s' for writing\n", outputFileName);
 
     if (inputFp)  fclose(inputFp);
     if (psfFp)    fclose(psfFp);
@@ -70,25 +70,34 @@ int main(int argc, char* argv[]) {
   }
   
   // Everything's okay, let's read.
-  int inputImageSize = imageDim.x*imageDim.y*imageDim.z;
-  int psfImageSize   = psfDim.x*psfDim.y*psfDim.z;
+  size_t inputImageSize = (size_t) imageDim.x*imageDim.y*imageDim.z;
+  size_t psfImageSize   = (size_t) psfDim.x*psfDim.y*psfDim.z;
   unsigned short *inputImage  = new unsigned short[inputImageSize];
   unsigned short *psfImage    = new unsigned short[psfImageSize];
 
-  fread(inputImage, sizeof(unsigned short), inputImageSize, inputFp);
+  if (inputImageSize !=
+      fread(inputImage, sizeof(unsigned short), inputImageSize, inputFp)) {
+    printf("Error reading input image file\n");
+    return 1;
+  }  
   fclose(inputFp);
-  fread(psfImage, sizeof(unsigned short), psfImageSize, psfFp);
+
+  if (psfImageSize !=
+      fread(psfImage, sizeof(unsigned short), psfImageSize, psfFp)) {
+    printf("Error reading PSF file\n");
+    return 1;
+  }
   fclose(psfFp);
   
   // Cast to floats
   float *inputImageFloat = new float[inputImageSize];
-  for (int i = 0; i < inputImageSize; i++) {
+  for (size_t i = 0; i < inputImageSize; i++) {
     inputImageFloat[i] = static_cast<float>(inputImage[i]);
   }
   delete[] inputImage;
 
   float *psfImageFloat = new float[psfImageSize];
-  for (int i = 0; i < psfImageSize; i++) {
+  for (size_t i = 0; i < psfImageSize; i++) {
     psfImageFloat[i] = static_cast<float>(psfImage[i]);
   }
   delete[] psfImage;
@@ -103,7 +112,7 @@ int main(int argc, char* argv[]) {
 
   // Cast back to unsigned shorts and write.
   unsigned short *outputImage = new unsigned short[inputImageSize];
-  for (int i = 0; i < inputImageSize; i++) {
+  for (size_t i = 0; i < inputImageSize; i++) {
     outputImage[i] = static_cast<unsigned short>(outputImageFloat[i]);
   }
 
