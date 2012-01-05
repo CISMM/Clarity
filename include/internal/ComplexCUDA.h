@@ -37,7 +37,7 @@ typedef float2 Complex;
  * @param c Complex number to conjugate.
  * @return Conjugate of c1.
  */
-__device__ Complex ComplexConjugate(Complex c) {
+__forceinline__ __device__ Complex ComplexConjugate(Complex c) {
    Complex t;
    t.x =  c.x;
    t.y = -c.y;
@@ -52,7 +52,7 @@ __device__ Complex ComplexConjugate(Complex c) {
  * @param c2 Second complex number.
  * @return Complex result of the addition.
  */
-__device__ Complex ComplexAdd(Complex c1, Complex c2) {
+__forceinline__ __device__ Complex ComplexAdd(Complex c1, Complex c2) {
     Complex t;
     t.x = c1.x + c2.x;
     t.y = c1.y + c2.y;
@@ -67,7 +67,7 @@ __device__ Complex ComplexAdd(Complex c1, Complex c2) {
  * @param c2 Second complex number.
  * @return Complex result of the multiplication.
  */
-__device__ Complex ComplexMultiply(Complex c1, Complex c2) {
+__forceinline__ __device__ Complex ComplexMultiply(Complex c1, Complex c2) {
     Complex t;
     t.x = c1.x * c2.x - c1.y * c2.y;
     t.y = c1.x * c2.y + c1.y * c2.x;
@@ -82,7 +82,7 @@ __device__ Complex ComplexMultiply(Complex c1, Complex c2) {
  * @param s Real scale value.
  * @return Complex result of scaling operation.
  */
-__device__ Complex ComplexScale(Complex c, float s) {
+__forceinline__ __device__ Complex ComplexScale(Complex c, float s) {
     Complex t;
     t.x = c.x * s;
     t.y = c.y * s;
@@ -98,7 +98,7 @@ __device__ Complex ComplexScale(Complex c, float s) {
  * @param s  Real scale value.
  * @return Complex result of the operation.
  */
-__device__ Complex ComplexMultiplyAndScale(Complex c1, Complex c2, float s) {
+__forceinline__ __device__ Complex ComplexMultiplyAndScale(Complex c1, Complex c2, float s) {
     return ComplexScale(ComplexMultiply(c1, c2), s);
 }
 
@@ -109,7 +109,7 @@ __device__ Complex ComplexMultiplyAndScale(Complex c1, Complex c2, float s) {
  * @param c Complex number whose magnitude should be taken.
  * @return Squared magnitude.
  */
-__device__ float ComplexMagnitudeSquared(Complex c) {
+__forceinline__ __device__ float ComplexMagnitudeSquared(Complex c) {
    return ((c.x*c.x) + (c.y*c.y));
 }
 
