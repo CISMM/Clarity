@@ -26,6 +26,7 @@
 
 #include <fftw3.h>
 #include <iostream>
+#include <cstdlib>
 
 #ifdef BUILD_WITH_OPENMP
 #include <omp.h>

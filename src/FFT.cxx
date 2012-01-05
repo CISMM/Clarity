@@ -105,8 +105,6 @@ Clarity_FFT_C2R_float(
   fftTimer.Start();
 #endif // TIME_FFT
 
-  int numVoxels = nx*ny*nz;
-
 #ifdef BUILD_WITH_CUDA
   if (g_CUDACapable) {
     cufftHandle plan;

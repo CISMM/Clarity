@@ -133,7 +133,6 @@ Clarity_MaximumLikelihoodDeconvolveCPU(
   Clarity_ReduceSum(&energy, inImage, nx*ny*nz);
 
   // Iterate
-  int numVoxels = nx*ny*nz;	 
   for (unsigned k = 0; k < iterations; k++) {
     float* currentGuess = (k == 0 ? inImage : iPtr);
     float* newGuess     = (k == iterations-1 ? outImage : iPtr);

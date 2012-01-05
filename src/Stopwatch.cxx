@@ -42,7 +42,7 @@ static char baseType[] = "Stopwatch virtual base class";
  * @see SetName
  */
 StopwatchBase::StopwatchBase(const char *name)
-  : elapsedTime(0.0f), numStarts(0), running(false), sw_type(baseType)
+  : elapsedTime(0.0f), numStarts(0), sw_type(baseType), running(false)
 {
   if (name==0) name = "Stopwatch";
   SetName(name);

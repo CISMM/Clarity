@@ -82,7 +82,7 @@ Clarity_Real_Malloc(
   } else
 #endif // BUILD_WITH_CUDA
   {
-    *buffer = fftwf_malloc(sizeof(size)*nz*ny*nx);
+    *buffer = fftwf_malloc(totalSize);
     if (*buffer == NULL) {
       result = CLARITY_OUT_OF_MEMORY;
     }
