@@ -40,18 +40,15 @@ INCLUDE_DIRECTORIES(${Clarity_SOURCE_DIR}
   )
 
 SET( Clarity_SRCS
-  src/BlindMaximumLikelihoodDeconvolve.cxx
   src/Clarity.cxx
   src/ComputePrimitives.cxx
   src/Convolve.cxx
   src/FFT.cxx
-  src/IDivergenceDeconvolve.cxx
   src/ImageClip.cxx
   src/ImagePadSpatialShift.cxx
   src/JansenVanCittertDeconvolve.cxx
   src/Memory.cxx
   src/MaximumLikelihoodDeconvolve.cxx
-  src/SmoothedJansenVanCittertDeconvolve.cxx
   src/Stopwatch.cxx
   src/WienerDeconvolve.cxx
   )
@@ -93,3 +90,18 @@ SET_TARGET_PROPERTIES(Clarity PROPERTIES
 
 ADD_SUBDIRECTORY(apps)
 ADD_SUBDIRECTORY(tests)
+
+################################################################
+## installation of library
+################################################################
+IF(WIN32)
+  INSTALL(TARGETS
+    Clarity
+    RUNTIME
+    DESTINATION ${CMAKE_INSTALL_PREFIX})
+ELSE(WIN32)
+  INSTALL(TARGETS
+    Clarity
+    LIBRARY
+    DESTINATION ${CMAKE_INSTALL_PREFIX})
+ENDIF(WIN32)
