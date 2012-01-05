@@ -87,14 +87,14 @@ Clarity_UnRegister() {
    return CLARITY_SUCCESS;
 }
 
-
 ClarityResult_t
 Clarity_SetNumberOfThreads(unsigned n) {
 
 #ifdef BUILD_WITH_OPENMP
    omp_set_num_threads(n);
-   fftwf_plan_with_nthreads(n);
 #endif // BUILD_WITH_OPENMP
+
+   fftwf_plan_with_nthreads(n);
 
    return CLARITY_SUCCESS;
 }
