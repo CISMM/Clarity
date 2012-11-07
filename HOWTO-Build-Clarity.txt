@@ -14,7 +14,7 @@ Last update: 2008-12-14
 
 6). Configure the CUDA settings, set CUDA_BUILD_TYPE to "Device". If CUDA_INSTALL_PREFIX does not give a valid path name, set the path to your CUDA Toolkit installation directory.
 
-7). In CMake, set FFTW_INCLUDE_DIR to the directory where you installed FFTW3, and set FFTW_LIBRARY to that same directory but with libfftw3f-3.lib appended to the end (libfftw3.a in linux).
+7). In CMake, set FFTW_INCLUDE_DIR to the directory where you installed FFTW3, and set FFTW_LIBRARY to that same directory but with libfftw3f-3.lib appended to the end (libfftw3.a in linux). Also, set FFTW_THREADS_LIBRARY to libfftw3f_threads.a on linux.
 
 8). Click "Configure" (type "c" in linux) and click "OK" (type "g" in linux). CMake will build the project files (makefiles) and exit.
 
