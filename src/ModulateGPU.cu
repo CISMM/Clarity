@@ -30,7 +30,7 @@
 #define DEFAULT_BLOCKS 64
 #define DEFAULT_THREADS_PER_BLOCK 128
 
-#define CLARITY_MODULATE_BLOCKS_ENV            "CLARITY_MODULATE__BLOCKS"
+#define CLARITY_MODULATE_BLOCKS_ENV            "CLARITY_MODULATE_BLOCKS"
 #define CLARITY_MODULATE_THREADS_PER_BLOCK_ENV "CLARITY_MODULATE_THREADS_PER_BLOCK"
 
 int getModulateBlocks() {
@@ -39,6 +39,8 @@ int getModulateBlocks() {
   if (blockString) {
     numBlocks = atoi(blockString);
   }
+
+  printf("Using %d blocks\n", numBlocks);
 
   return numBlocks;
 }
@@ -50,6 +52,8 @@ int getModulateThreadsPerBlock() {
   if (threadsPerBlockString) {
     numThreadsPerBlock = atoi(threadsPerBlockString);
   }
+
+  printf("Using %d threads per block\n", numThreadsPerBlock);
 
   return numThreadsPerBlock;
 }
