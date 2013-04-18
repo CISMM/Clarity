@@ -66,6 +66,9 @@ Clarity_Register() {
          cudaDeviceProp deviceProp;
          cudaGetDeviceProperties(&deviceProp, 0);
          std::cout << "CUDA device found: '" << deviceProp.name << "'" << std::endl;
+         int kilobytes = 1024;
+         int megabytes = kilobytes * kilobytes;
+         std::cout << "Global memory:     " << deviceProp.totalGlobalMem / megabytes << " MB\n";
          g_CUDACapable = true;
       }
 #endif
@@ -107,4 +110,41 @@ Clarity_Dim3FromArray(int dimArray[3]) {
    dim.y = dimArray[1];
    dim.z = dimArray[2];
    return dim;
+}
+
+
+char *
+Clarity_ResultString( ClarityResult_t result )
+{
+  char * string = "<unknown Clarity result>";
+  switch ( result ) {
+  case CLARITY_FFT_FAILED:
+    string = "CLARITY_FFT_FAILED";
+    break;
+
+  case CLARITY_OUT_OF_MEMORY:
+    string = "CLARITY_OUT_OF_MEMORY";
+    break;
+
+  case CLARITY_DEVICE_OUT_OF_MEMORY:
+    string = "CLARITY_DEVICE_OUT_OF_MEMORY";
+    break;
+
+  case CLARITY_INVALID_OPERATION:
+    string = "CLARITY_INVALID_OPERATION";
+    break;
+
+  case CLARITY_INVALID_ARGUMENT:
+    string = "CLARITY_INVALID_ARGUMENT";
+    break;
+
+  case CLARITY_SUCCESS:
+    string = "CLARITY_SUCCESS";
+    break;
+
+  default:
+    break;
+  }
+
+  return string;
 }
